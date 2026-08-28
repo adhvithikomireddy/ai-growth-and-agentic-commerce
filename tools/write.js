@@ -1,0 +1,1 @@
+const fs = require('fs'); const path = require('path'); const [,, targetPath, dataPath] = process.argv; const content = fs.readFileSync(dataPath, 'utf8'); fs.mkdirSync(path.dirname(targetPath), { recursive: true }); fs.writeFileSync(targetPath, content, 'utf8'); console.log('Wrote', targetPath);
