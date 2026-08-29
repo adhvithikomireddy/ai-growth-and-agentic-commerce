@@ -19,7 +19,7 @@ export const getCart = async (req: AuthenticatedRequest, res: Response): Promise
     // Re-verify authoritative prices from Product collection
     let subtotal = 0;
     let discountTotal = 0;
-    const validatedItems = [];
+    const validatedItems: any[] = [];
 
     for (const item of cart.items) {
       const product = await Product.findOne({ productId: item.productId });
@@ -43,6 +43,11 @@ export const getCart = async (req: AuthenticatedRequest, res: Response): Promise
           inStock: product.stock >= item.quantity,
         });
       }
+    }
+
+    if (validatedItems.length !== cart.items.length) {
+      cart.items = cart.items.filter(item => validatedItems.some(v => v.productId === item.productId));
+      await cart.save();
     }
 
     const finalAmount = Math.max(0, subtotal - discountTotal);

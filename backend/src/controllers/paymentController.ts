@@ -39,13 +39,17 @@ export const createRazorpayOrder = async (req: AuthenticatedRequest, res: Respon
     for (const item of cart.items) {
       const product = await Product.findOne({ productId: item.productId });
 
-      if (!product || product.stock < item.quantity) {
+      if (!product) {
+        continue;
+      }
+
+      if (product.stock < item.quantity) {
         res.status(400).json({
           success: false,
           data: null,
           error: {
             code: "PRODUCT_OUT_OF_STOCK",
-            message: `Product "${product?.name || item.productId}" is no longer available in the requested quantity.`,
+            message: `Product "${product.name}" is no longer available in the requested quantity.`,
           },
         });
         return;
