@@ -134,9 +134,9 @@ export const AIShoppingView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded-md">
-                Track 01: Razorpay Buildathon
+                Agentic Guardrails
               </span>
-              <span className="text-xs font-semibold text-[#172018]">Architecture Standards</span>
+              <span className="text-xs font-semibold text-[#172018]">Autonomous Safety Standards</span>
             </div>
             <p className="text-[11px] text-[#667067] mt-0.5">
               Every money action explainable, bounded and gated. With audit trail and graceful failure handling.

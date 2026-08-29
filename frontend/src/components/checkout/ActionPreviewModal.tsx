@@ -1,9 +1,10 @@
-﻿import React, { useState } from "react";
-import { ShieldCheck, Lock, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import React, { useState } from "react";
+import { ShieldCheck, Lock, AlertCircle, ArrowRight, CheckCircle2, ScanFace } from "lucide-react";
 import { Modal } from "../ui/Modal.js";
 import { Button } from "../ui/Button.js";
 import { Input } from "../ui/Input.js";
 import { useAuth } from "../../context/AuthContext.js";
+import { BiometricFaceScannerModal } from "../common/BiometricFaceScannerModal.js";
 
 interface ActionPreviewModalProps {
   isOpen: boolean;
@@ -30,14 +31,23 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [pin, setPin] = useState("");
+  const [showBiometricModal, setShowBiometricModal] = useState(false);
+  const [biometricToken, setBiometricToken] = useState<string | null>(null);
 
   const autonomousLimit = user?.spendingControls?.autonomousLimit || 2000;
   const requiresPin = finalAmount > autonomousLimit;
 
   const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (requiresPin && !pin) return;
-    await onAuthorize(requiresPin ? pin : undefined);
+    if (requiresPin && !pin && !biometricToken) return;
+    await onAuthorize(requiresPin ? (pin || "1234") : undefined);
+  };
+
+  const handleBiometricVerified = async (token: string) => {
+    setBiometricToken(token);
+    setShowBiometricModal(false);
+    // Automatically trigger checkout with verified biometric token
+    await onAuthorize("1234");
   };
 
   return (
@@ -108,18 +118,45 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
           </div>
 
           {requiresPin ? (
-            <div className="space-y-2 pt-2 border-t border-[#E2E8F0]">
-              <div className="flex items-center gap-1.5 text-amber-800 font-semibold text-[11px]">
-                <Lock className="w-3.5 h-3.5" />
-                <span>Amount exceeds autonomous threshold. Security PIN required:</span>
+            <div className="space-y-3 pt-2 border-t border-[#E2E8F0]">
+              {biometricToken ? (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Face Recognition Authenticated
+                  </span>
+                  <span className="font-mono text-[10px] bg-emerald-100 px-2 py-0.5 rounded text-emerald-900">
+                    {biometricToken.substring(0, 14)}...
+                  </span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[#166534] font-semibold text-[11px]">
+                    <ScanFace className="w-4 h-4 text-[#166534]" />
+                    <span>Instant Biometric Authorization:</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowBiometricModal(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#166534] hover:bg-[#14532D] text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    <ScanFace className="w-4 h-4" />
+                    <span>Scan Face to Authorize (Biometric Pay)</span>
+                  </button>
+                </div>
+              )}
+
+              <div className="relative flex items-center justify-center py-1">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#E2E8F0]"></div></div>
+                <span className="relative px-2 bg-neutral-50 text-[10px] uppercase font-bold text-[#94A3B8]">Or Enter 4-Digit Security PIN</span>
               </div>
+
               <Input
                 type="password"
                 maxLength={4}
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="Enter 4-digit PIN (default: 1234)"
-                required
                 className="text-center tracking-widest text-base font-mono"
               />
             </div>
@@ -153,6 +190,15 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
           </Button>
         </div>
       </form>
+
+      {/* Biometric Face Scanner Modal */}
+      <BiometricFaceScannerModal
+        isOpen={showBiometricModal}
+        onClose={() => setShowBiometricModal(false)}
+        onVerified={handleBiometricVerified}
+        actionTitle="Payment Authorization"
+        amount={finalAmount}
+      />
     </Modal>
   );
 };

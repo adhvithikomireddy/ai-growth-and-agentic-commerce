@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { ShoppingBag, Sparkles, User as UserIcon, Shield, Globe, LogOut, Store, FileText } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.js";
 import { useCart } from "../../context/CartContext.js";
@@ -48,7 +48,7 @@ export const CustomerNavbar: React.FC<CustomerNavbarProps> = ({
                   {t("brand_name")}
                 </span>
                 <span className="text-[10px] text-[#667067] font-medium tracking-wide uppercase">
-                  Razorpay Buildathon
+                  Autonomous Commerce
                 </span>
               </div>
             </button>

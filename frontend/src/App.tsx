@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext.js";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext.js";
 import { CartProvider } from "./context/CartContext.js";
@@ -86,7 +86,7 @@ const MainContent: React.FC = () => {
               N
             </div>
             <span className="font-semibold text-[#172018]">NexCommerce</span>
-            <span>• Razorpay Buildathon: AI Growth & Agentic Commerce</span>
+            <span>• Autonomous Multi-Agent Commerce Platform</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
