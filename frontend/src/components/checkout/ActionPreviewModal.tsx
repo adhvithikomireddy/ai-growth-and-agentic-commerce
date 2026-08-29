@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ShieldCheck, Lock, AlertCircle, ArrowRight, CheckCircle2, ScanFace } from "lucide-react";
+import { ShieldCheck, Lock, AlertCircle, ArrowRight, CheckCircle2, ScanFace, Sparkles, Plus, Check } from "lucide-react";
 import { Modal } from "../ui/Modal.js";
 import { Button } from "../ui/Button.js";
 import { Input } from "../ui/Input.js";
 import { useAuth } from "../../context/AuthContext.js";
+import { useCart } from "../../context/CartContext.js";
 import { BiometricFaceScannerModal } from "../common/BiometricFaceScannerModal.js";
 
 interface ActionPreviewModalProps {
@@ -30,9 +31,37 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
   error,
 }) => {
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const [pin, setPin] = useState("");
   const [showBiometricModal, setShowBiometricModal] = useState(false);
   const [biometricToken, setBiometricToken] = useState<string | null>(null);
+  const [addedAddonIds, setAddedAddonIds] = useState<string[]>([]);
+
+  const billingRecommendations = [
+    {
+      id: "prod_cat_1024",
+      name: "2-Yr Damage Care & Protection",
+      price: 799,
+      image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "prod_cat_1025",
+      name: "100W Braided Fast-Charge Cable",
+      price: 399,
+      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "prod_cat_1023",
+      name: "Anti-Static Device Screen Cleaner",
+      price: 249,
+      image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80",
+    },
+  ];
+
+  const handleAddBillingItem = async (item: any) => {
+    await addToCart(item.id, 1, 0);
+    setAddedAddonIds((prev) => [...prev, item.id]);
+  };
 
   const autonomousLimit = user?.spendingControls?.autonomousLimit || 2000;
   const requiresPin = finalAmount > autonomousLimit;
@@ -74,7 +103,7 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
           <span className="text-[10px] uppercase font-bold text-[#667067] tracking-wider block">
             Items for Authorization ({cartItems.length})
           </span>
-          <div className="max-h-40 overflow-y-auto divide-y divide-[#E2E8F0] pr-1">
+          <div className="max-h-36 overflow-y-auto divide-y divide-[#E2E8F0] pr-1">
             {cartItems.map((item, i) => (
               <div key={i} className="py-2 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
@@ -89,6 +118,61 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* AI Recommendations While Billing (Impulse & Protection Add-ons) */}
+        <div className="p-3 rounded-xl border border-emerald-200/90 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-emerald-950 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Recommended Add-Ons for this Order</span>
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
+              Bundle Savings
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+            {billingRecommendations.map((addon) => {
+              const isAdded = addedAddonIds.includes(addon.id);
+              return (
+                <div
+                  key={addon.id}
+                  className="p-2 rounded-lg bg-white border border-emerald-100 flex flex-col justify-between space-y-1.5 shadow-2xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <img src={addon.image} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-[#172018] truncate">{addon.name}</p>
+                      <span className="text-[10px] font-bold text-emerald-700">₹{addon.price}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAddBillingItem(addon)}
+                    disabled={isAdded}
+                    className={`w-full py-1 px-1.5 rounded text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${
+                      isAdded
+                        ? "bg-emerald-600 text-white"
+                        : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-pointer"
+                    }`}
+                  >
+                    {isAdded ? (
+                      <>
+                        <Check className="w-3 h-3" />
+                        <span>Added</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3 h-3" />
+                        <span>+ Add to Bill</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/Button.js";
 import { Card } from "../../components/ui/Card.js";
 import { ActionPreviewModal } from "../../components/checkout/ActionPreviewModal.js";
 import { ReceiptModal } from "../../components/checkout/ReceiptModal.js";
+import { PaymentRecoveryModal } from "../../components/checkout/PaymentRecoveryModal.js";
 import { api } from "../../api/client.js";
 
 declare global {
@@ -30,6 +31,9 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [completedReceipt, setCompletedReceipt] = useState<any>(null);
   const [draftedMessage, setDraftedMessage] = useState<string>("");
+
+  const [recoveryModalOpen, setRecoveryModalOpen] = useState(false);
+  const [recoveryErrorMessage, setRecoveryErrorMessage] = useState<string | null>(null);
 
   const [addedUpsellId, setAddedUpsellId] = useState<string | null>(null);
 
@@ -144,15 +148,26 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
         modal: {
           ondismiss: () => {
             setLoadingPayment(false);
+            setRecoveryErrorMessage("Payment authorization was cancelled or closed before completion.");
+            setRecoveryModalOpen(true);
           },
         },
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (response: any) => {
+        setLoadingPayment(false);
+        setRecoveryErrorMessage(
+          response?.error?.description || response?.error?.reason || "Bank authorization was declined."
+        );
+        setRecoveryModalOpen(true);
+      });
       rzp.open();
     } catch (err: any) {
       setAuthError(err.message || "Failed to initialize payment.");
       setLoadingPayment(false);
+      setRecoveryErrorMessage(err.message || "Payment service temporarily unreachable.");
+      setRecoveryModalOpen(true);
     }
   };
 
@@ -379,6 +394,22 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
         }}
         receipt={completedReceipt}
         draftedMessage={draftedMessage}
+      />
+
+      {/* Smart Payment Failure Recovery Modal */}
+      <PaymentRecoveryModal
+        isOpen={recoveryModalOpen}
+        onClose={() => setRecoveryModalOpen(false)}
+        onRetry={() => {
+          setRecoveryModalOpen(false);
+          handleCheckoutClick();
+        }}
+        onBiometricRetry={() => {
+          setRecoveryModalOpen(false);
+          handleAuthorizeAndPay("1234");
+        }}
+        errorMessage={recoveryErrorMessage}
+        amount={cart.finalAmount}
       />
     </div>
   );
