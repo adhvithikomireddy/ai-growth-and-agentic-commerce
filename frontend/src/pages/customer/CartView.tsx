@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Trash2, Plus, Minus, Shield, ArrowRight, ShoppingBag, Sparkles, Zap, Check } from "lucide-react";
 import { useCart } from "../../context/CartContext.js";
 import { useAuth } from "../../context/AuthContext.js";
@@ -36,37 +36,21 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
   const [recoveryErrorMessage, setRecoveryErrorMessage] = useState<string | null>(null);
 
   const [addedUpsellId, setAddedUpsellId] = useState<string | null>(null);
+  const [upsellProducts, setUpsellProducts] = useState<any[]>([]);
 
-  const upsellItems = [
-    {
-      id: "prod_cat_1024",
-      name: "Razer Fast NVMe External SSD 850",
-      category: "Accessories",
-      price: 28799,
-      discountPercent: 5,
-      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "prod_cat_1023",
-      name: "Anker Soundcore Bluetooth Speaker 311",
-      category: "Audio",
-      price: 24799,
-      discountPercent: 5,
-      image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "prod_cat_1025",
-      name: "Garmin Fitness Smart Tracker Band 283",
-      category: "Wearables",
-      price: 75199,
-      discountPercent: 5,
-      image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&auto=format&fit=crop&q=80",
-    },
-  ];
+  useEffect(() => {
+    api.getProducts({ category: "Accessories", limit: 3 })
+      .then((res) => {
+        if (res.products && res.products.length > 0) {
+          setUpsellProducts(res.products);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAddUpsell = async (item: any) => {
-    await addToCart(item.id, 1, item.discountPercent);
-    setAddedUpsellId(item.id);
+    await addToCart(item.productId, 1, 5);
+    setAddedUpsellId(item.productId);
     setTimeout(() => setAddedUpsellId(null), 2000);
   };
 
@@ -250,19 +234,19 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              {upsellItems.map((uItem) => {
+              {upsellProducts.map((uItem) => {
                 const discountedPrice = Math.round(uItem.price * 0.95);
-                const isAdded = addedUpsellId === uItem.id;
+                const isAdded = addedUpsellId === uItem.productId;
 
                 return (
                   <div
-                    key={uItem.id}
+                    key={uItem.productId}
                     className="p-3 rounded-xl bg-white border border-emerald-100 hover:border-emerald-300 transition-all flex flex-col justify-between space-y-2.5 shadow-xs group"
                   >
                     <div className="space-y-2">
                       <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-neutral-100 border border-neutral-100">
                         <img
-                          src={uItem.image}
+                          src={uItem.imageUrl}
                           alt={uItem.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />

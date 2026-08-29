@@ -5,6 +5,7 @@ import { Button } from "../ui/Button.js";
 import { Input } from "../ui/Input.js";
 import { useAuth } from "../../context/AuthContext.js";
 import { useCart } from "../../context/CartContext.js";
+import { api } from "../../api/client.js";
 import { BiometricFaceScannerModal } from "../common/BiometricFaceScannerModal.js";
 
 interface ActionPreviewModalProps {
@@ -36,31 +37,23 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
   const [showBiometricModal, setShowBiometricModal] = useState(false);
   const [biometricToken, setBiometricToken] = useState<string | null>(null);
   const [addedAddonIds, setAddedAddonIds] = useState<string[]>([]);
+  const [billingRecommendations, setBillingRecommendations] = useState<any[]>([]);
 
-  const billingRecommendations = [
-    {
-      id: "prod_cat_1024",
-      name: "2-Yr Damage Care & Protection",
-      price: 799,
-      image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "prod_cat_1025",
-      name: "100W Braided Fast-Charge Cable",
-      price: 399,
-      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "prod_cat_1023",
-      name: "Anti-Static Device Screen Cleaner",
-      price: 249,
-      image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=80",
-    },
-  ];
+  React.useEffect(() => {
+    if (isOpen) {
+      api.getProducts({ category: "Accessories", limit: 3 })
+        .then((res) => {
+          if (res.products && res.products.length > 0) {
+            setBillingRecommendations(res.products);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
 
   const handleAddBillingItem = async (item: any) => {
-    await addToCart(item.id, 1, 0);
-    setAddedAddonIds((prev) => [...prev, item.id]);
+    await addToCart(item.productId, 1, item.discountPercent || 0);
+    setAddedAddonIds((prev) => [...prev, item.productId]);
   };
 
   const autonomousLimit = user?.spendingControls?.autonomousLimit || 2000;
@@ -135,17 +128,17 @@ export const ActionPreviewModal: React.FC<ActionPreviewModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
             {billingRecommendations.map((addon) => {
-              const isAdded = addedAddonIds.includes(addon.id);
+              const isAdded = addedAddonIds.includes(addon.productId);
               return (
                 <div
-                  key={addon.id}
+                  key={addon.productId}
                   className="p-2 rounded-lg bg-white border border-emerald-100 flex flex-col justify-between space-y-1.5 shadow-2xs"
                 >
                   <div className="flex items-center gap-2">
-                    <img src={addon.image} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                    <img src={addon.imageUrl} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-[10px] font-bold text-[#172018] truncate">{addon.name}</p>
-                      <span className="text-[10px] font-bold text-emerald-700">₹{addon.price}</span>
+                      <span className="text-[10px] font-bold text-emerald-700">₹{addon.price.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
                   <button
