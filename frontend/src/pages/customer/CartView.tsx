@@ -1,5 +1,5 @@
-﻿import React, { useState } from "react";
-import { Trash2, Plus, Minus, Shield, ArrowRight, ShoppingBag } from "lucide-react";
+import React, { useState } from "react";
+import { Trash2, Plus, Minus, Shield, ArrowRight, ShoppingBag, Sparkles, Zap, Check } from "lucide-react";
 import { useCart } from "../../context/CartContext.js";
 import { useAuth } from "../../context/AuthContext.js";
 import { useLanguage } from "../../context/LanguageContext.js";
@@ -19,7 +19,7 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
   onExplore,
   onOpenAuth,
 }) => {
-  const { cart, updateQuantity, removeFromCart, refreshCart } = useCart();
+  const { cart, updateQuantity, removeFromCart, addToCart, refreshCart } = useCart();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -30,6 +30,41 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [completedReceipt, setCompletedReceipt] = useState<any>(null);
   const [draftedMessage, setDraftedMessage] = useState<string>("");
+
+  const [addedUpsellId, setAddedUpsellId] = useState<string | null>(null);
+
+  const upsellItems = [
+    {
+      id: "prod_cat_1024",
+      name: "Razer Fast NVMe External SSD 850",
+      category: "Accessories",
+      price: 28799,
+      discountPercent: 5,
+      image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "prod_cat_1023",
+      name: "Anker Soundcore Bluetooth Speaker 311",
+      category: "Audio",
+      price: 24799,
+      discountPercent: 5,
+      image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&auto=format&fit=crop&q=80",
+    },
+    {
+      id: "prod_cat_1025",
+      name: "Garmin Fitness Smart Tracker Band 283",
+      category: "Wearables",
+      price: 75199,
+      discountPercent: 5,
+      image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&auto=format&fit=crop&q=80",
+    },
+  ];
+
+  const handleAddUpsell = async (item: any) => {
+    await addToCart(item.id, 1, item.discountPercent);
+    setAddedUpsellId(item.id);
+    setTimeout(() => setAddedUpsellId(null), 2000);
+  };
 
   if (!cart || cart.items.length === 0) {
     return (
@@ -178,6 +213,90 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
               </div>
             </Card>
           ))}
+
+          {/* AI Upsell & Companion Add-on Accelerator */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50 via-white to-teal-50 border border-emerald-200/90 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-950">
+                    AI Cross-Sell Accelerator
+                  </h4>
+                  <p className="text-[11px] text-emerald-800">
+                    Frequently bundled companion items with an instant 5% bundle discount
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Active Offer
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              {upsellItems.map((uItem) => {
+                const discountedPrice = Math.round(uItem.price * 0.95);
+                const isAdded = addedUpsellId === uItem.id;
+
+                return (
+                  <div
+                    key={uItem.id}
+                    className="p-3 rounded-xl bg-white border border-emerald-100 hover:border-emerald-300 transition-all flex flex-col justify-between space-y-2.5 shadow-xs group"
+                  >
+                    <div className="space-y-2">
+                      <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-neutral-100 border border-neutral-100">
+                        <img
+                          src={uItem.image}
+                          alt={uItem.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <span className="absolute top-1 left-1 bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          5% OFF
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#172018] line-clamp-1">
+                          {uItem.name}
+                        </p>
+                        <div className="flex items-baseline gap-1.5 mt-0.5">
+                          <span className="text-xs font-bold text-emerald-700">
+                            ₹{discountedPrice.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[10px] text-neutral-400 line-through">
+                            ₹{uItem.price.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleAddUpsell(uItem)}
+                      disabled={isAdded}
+                      className={`w-full py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                        isAdded
+                          ? "bg-emerald-600 text-white"
+                          : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      }`}
+                    >
+                      {isAdded ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Added!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add to Cart</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Order Summary Box */}
