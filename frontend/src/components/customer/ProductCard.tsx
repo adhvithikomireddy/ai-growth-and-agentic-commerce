@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { Star, ShieldCheck, ShoppingCart, Percent, Layers, Check } from "lucide-react";
+import React from "react";
+import { Star, ShieldCheck, ShoppingCart, Percent, Layers, Check, Sparkles } from "lucide-react";
 import { Product } from "../../types/index.js";
 import { useCart } from "../../context/CartContext.js";
 import { useLanguage } from "../../context/LanguageContext.js";
@@ -105,14 +105,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </h3>
 
           {/* AI Recommendation Reason */}
-          {product.recommendationReason && (
-            <div className="my-2.5 px-2.5 py-1.5 rounded-lg bg-[#DCFCE7]/50 border border-[#BBF7D0] text-[11px] text-[#166534] leading-relaxed">
-              <span className="font-semibold block text-[10px] uppercase tracking-wide">
-                Agentic Justification:
-              </span>
-              {product.recommendationReason}
+          {product.recommendationReason ? (
+            <div className="my-2.5 p-2.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] text-xs text-[#14532D] leading-relaxed shadow-xs">
+              <div className="flex items-center gap-1 font-bold text-[10px] uppercase tracking-wider text-[#166534] mb-1">
+                <Sparkles className="w-3 h-3 text-[#166534]" />
+                <span>AI Recommendation Reason:</span>
+              </div>
+              <p className="text-[11px] text-[#166534] font-medium leading-relaxed">
+                {product.recommendationReason}
+              </p>
             </div>
-          )}
+          ) : null}
 
           {/* Specifications Pills */}
           {specsList.length > 0 && (

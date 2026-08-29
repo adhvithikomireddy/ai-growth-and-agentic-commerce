@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Sparkles, ArrowRight, CornerDownLeft, RefreshCw } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.js";
 import { Button } from "../ui/Button.js";
@@ -14,8 +14,8 @@ export const AIShoppingBar: React.FC<AIShoppingBarProps> = ({ onSearch, loading 
 
   const samplePrompts = [
     {
-      label: "Coding Laptop under ₹70k",
-      query: "I need a laptop under ₹70,000 for programming",
+      label: "Programming Laptop < ₹80k",
+      query: "I need a high-performance laptop with 16GB RAM for programming and Docker",
       lang: "en",
     },
     {
@@ -29,8 +29,23 @@ export const AIShoppingBar: React.FC<AIShoppingBarProps> = ({ onSearch, loading 
       lang: "hi",
     },
     {
-      label: "Daughter's Birthday Gift < ₹5k",
-      query: "I need something creative for my daughter's birthday under ₹5,000",
+      label: "Quiet Keyboard for Office < ₹5k",
+      query: "I need a quiet wireless keyboard for office typing under 5000",
+      lang: "en",
+    },
+    {
+      label: "Air Fryer for Cooking < ₹10k",
+      query: "Show me a digital air fryer for healthy baking and cooking under 10000",
+      lang: "en",
+    },
+    {
+      label: "Drawing Tablet Gift < ₹5k",
+      query: "Creative digital drawing tablet gift for an artist under 5000",
+      lang: "en",
+    },
+    {
+      label: "4K Camera / Drone for Travel",
+      query: "4K waterproof camera or drone for travel vlog photography",
       lang: "en",
     },
     {

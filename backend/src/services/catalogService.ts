@@ -1,9 +1,11 @@
-import { Product, IProduct } from "../models/Product.js";
+﻿import { Product, IProduct } from "../models/Product.js";
 import { Merchant } from "../models/Merchant.js";
 
 export interface CatalogSearchParams {
   query?: string;
   category?: string;
+  brand?: string;
+  keywords?: string[];
   minPrice?: number;
   maxPrice?: number;
   inStockOnly?: boolean;
@@ -16,6 +18,8 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
   const {
     query,
     category,
+    brand,
+    keywords = [],
     minPrice,
     maxPrice,
     inStockOnly = false,
@@ -40,14 +44,32 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
     filter.stock = { $gt: 0 };
   }
 
+  // Collect search terms from query and keywords
+  const searchTerms: string[] = [...keywords];
+  if (brand && !searchTerms.includes(brand.toLowerCase())) {
+    searchTerms.push(brand.toLowerCase());
+  }
+
   if (query && query.trim()) {
-    const q = query.trim();
-    filter.$or = [
-      { name: { $regex: q, $options: "i" } },
-      { description: { $regex: q, $options: "i" } },
-      { tags: { $in: [new RegExp(q, "i")] } },
-      { category: { $regex: q, $options: "i" } },
-    ];
+    const rawTokens = query.trim().split(/\s+/).map(t => t.toLowerCase());
+    for (const token of rawTokens) {
+      if (token.length >= 3 && !searchTerms.includes(token)) {
+        searchTerms.push(token);
+      }
+    }
+  }
+
+  // If search terms exist, filter with $or regex across fields
+  if (searchTerms.length > 0) {
+    const orConditions = searchTerms.map(term => ({
+      $or: [
+        { name: { $regex: term, $options: "i" } },
+        { description: { $regex: term, $options: "i" } },
+        { tags: { $in: [new RegExp(term, "i")] } },
+        { "specifications.Brand": { $regex: term, $options: "i" } },
+      ]
+    }));
+    filter.$and = orConditions.map(c => ({ $or: c.$or }));
   }
 
   let sortCriteria: any = { createdAt: -1 };
@@ -55,12 +77,32 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
   else if (sortBy === "price_desc") sortCriteria = { price: -1 };
   else if (sortBy === "rating") sortCriteria = { rating: -1 };
   else if (sortBy === "trending") sortCriteria = { salesCount: -1, viewCount: -1 };
+  else if (sortBy === "relevance") sortCriteria = { rating: -1, salesCount: -1 };
 
   const skip = (page - 1) * limit;
-  const [products, total] = await Promise.all([
+  let [products, total] = await Promise.all([
     Product.find(filter).sort(sortCriteria).skip(skip).limit(limit),
     Product.countDocuments(filter),
   ]);
+
+  // Fallback: If strict AND returned 0 results, retry with looser OR matching
+  if (products.length === 0 && searchTerms.length > 0) {
+    delete filter.$and;
+    filter.$or = searchTerms.map(term => ({ name: { $regex: term, $options: "i" } }));
+    
+    [products, total] = await Promise.all([
+      Product.find(filter).sort(sortCriteria).skip(skip).limit(limit),
+      Product.countDocuments(filter),
+    ]);
+  }
+
+  // Final fallback: Return top rated products in category or catalog if still 0
+  if (products.length === 0) {
+    const fallbackFilter: any = { stock: { $gt: 0 } };
+    if (category && category !== "All") fallbackFilter.category = new RegExp(`^${category}$`, "i");
+    products = await Product.find(fallbackFilter).sort({ rating: -1 }).limit(limit);
+    total = products.length;
+  }
 
   return {
     products,
@@ -76,7 +118,6 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
 export const getProductById = async (productId: string) => {
   const product = await Product.findOne({ productId });
   if (product) {
-    // Increment viewCount asynchronously for trending analysis
     Product.updateOne({ productId }, { $inc: { viewCount: 1 } }).exec();
   }
   return product;
@@ -98,14 +139,13 @@ export const getRelatedProducts = async (productId: string) => {
   ];
 
   if (relatedIds.length > 0) {
-    const specificRelated = await Product.find({ productId: { $in: relatedIds } });
-    if (specificRelated.length > 0) return specificRelated;
+    return await Product.find({ productId: { $in: relatedIds }, stock: { $gt: 0 } }).limit(4);
   }
 
-  // Fallback to same category
   return await Product.find({
     category: product.category,
     productId: { $ne: productId },
+    stock: { $gt: 0 },
   }).limit(4);
 };
 
@@ -114,37 +154,31 @@ export const getCompatibleProducts = async (productId: string) => {
   if (!product) return [];
 
   if (product.compatibleProductIds && product.compatibleProductIds.length > 0) {
-    return await Product.find({ productId: { $in: product.compatibleProductIds } });
+    return await Product.find({
+      productId: { $in: product.compatibleProductIds },
+      stock: { $gt: 0 },
+    });
   }
 
-  // Fallback to Accessories
   return await Product.find({
     category: "Accessories",
-    productId: { $ne: productId },
-  }).limit(4);
+    stock: { $gt: 0 },
+  }).limit(3);
 };
 
 export const getCatalogCapabilities = async () => {
-  const [categories, merchant] = await Promise.all([
-    Product.distinct("category"),
-    Merchant.findOne({ merchantId: "merch_apex_001" }),
-  ]);
+  const merchant = await Merchant.findOne({ merchantId: "merch_apex_001" });
+  const categories = await Product.distinct("category");
 
   return {
-    merchantId: merchant?.merchantId || "merch_apex_001",
+    merchantId: "merch_apex_001",
     businessName: merchant?.businessName || "Apex Nova Lifestyle & Tech",
-    currency: merchant?.currency || "INR",
-    negotiationSupported: merchant?.negotiationPolicy?.allowNegotiation ?? true,
-    maxNegotiationDiscountPercent: merchant?.negotiationPolicy?.maxDiscountPercent ?? 10,
-    supportedCategories: categories,
-    capabilities: [
-      "real_time_stock_check",
-      "authoritative_price_check",
-      "bounded_negotiation",
-      "upsell_recommendations",
-      "cross_sell_accessories",
-      "bundle_discovery",
-    ],
-    agentProtocolVersion: "2.0-razorpay-a2a",
+    supportedCurrencies: ["INR"],
+    categories,
+    aiProtocolsSupported: ["A2A-Commerce-v1.0", "UAP-Compatible", "ACP-Ready"],
+    negotiationSupported: true,
+    maxAutonomousDiscountPercent: merchant?.negotiationPolicy?.maxDiscountPercent || 10,
+    spendingLimitsSupported: true,
+    activeCampaignsCount: 3,
   };
 };

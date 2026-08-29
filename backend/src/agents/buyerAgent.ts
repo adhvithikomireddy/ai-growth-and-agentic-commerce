@@ -123,7 +123,10 @@ export const processCustomerQuery = async (
     timestamp: new Date().toISOString(),
     messageType: "product_search",
     payload: {
+      query,
       category: parsedIntent.category,
+      brand: parsedIntent.brand,
+      keywords: parsedIntent.keywords,
       maxPrice: parsedIntent.budgetMax,
       minPrice: parsedIntent.budgetMin,
       requirements: parsedIntent.requirements,

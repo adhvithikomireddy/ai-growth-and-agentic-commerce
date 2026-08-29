@@ -1,9 +1,11 @@
 ﻿export interface ParsedIntent {
   intent: "search" | "trending" | "negotiate" | "compare" | "accessories" | "general_query";
   category?: string;
+  brand?: string;
   budgetMax?: number;
   budgetMin?: number;
   requirements: string[];
+  keywords: string[];
   language: "en" | "hi" | "te";
   confidence: number;
   targetProductId?: string;
@@ -23,30 +25,20 @@ export const extractBudget = (text: string): { budgetMax?: number; budgetMin?: n
   const cleaned = text.replace(/,/g, "");
 
   const regexList = [
-    /(?:under|below|within|max|less\s+than)\s*(?:rs\.?|inr)?\s*(\d+)/i,
-    /(\d+)\s*(?:లోపు|కింద|తక్కువ)/,
+    /(?:under|below|within|max|budget|less\s+than|upto|up\s+to)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i,
+    /(\d+)\s*(?:లోపు|కింద|తక్కువ|వరకు)/,
     /(?:के\s*अंदर|से\s*कम|तक)\s*(\d+)/,
     /(\d+)\s*(?:के\s*अंदर|से\s*कम|तक)/,
-    /(?:rs\.?|inr)\s*(\d+)/i,
+    /(?:rs\.?|inr|₹)\s*(\d+)/i,
   ];
 
   for (const rx of regexList) {
     const m = cleaned.match(rx);
     if (m && m[1]) {
       const val = parseInt(m[1], 10);
-      if (val >= 500 && val <= 500000) {
+      if (val >= 300 && val <= 500000) {
         budgetMax = val;
         break;
-      }
-    }
-  }
-
-  if (!budgetMax) {
-    const symbolMatch = cleaned.match(/(?:₹)\s*(\d+)/);
-    if (symbolMatch && symbolMatch[1]) {
-      const val = parseInt(symbolMatch[1], 10);
-      if (val >= 500 && val <= 500000) {
-        budgetMax = val;
       }
     }
   }
@@ -64,173 +56,172 @@ export const extractBudget = (text: string): { budgetMax?: number; budgetMin?: n
   return { budgetMax, budgetMin };
 };
 
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  Laptops: [
+    "laptop", "notebook", "ultrabook", "macbook", "computer", "pc", "thinkpad", "ideapad",
+    "లాప్‌టాప్", "కంప్యూటర్", "ల్యాప్‌టాప్", "लैपटॉप", "कंप्यूटर"
+  ],
+  Phones: [
+    "phone", "mobile", "smartphone", "iphone", "galaxy", "pixel", "oneplus", "android",
+    "ఫోన్", "మొబైల్", "స్మార్ట్‌ఫోన్", "फोन", "मोबाइल", "स्मार्टफोन"
+  ],
+  Audio: [
+    "headphone", "earphone", "earbuds", "audio", "speaker", "soundbar", "soundcore", "airpods", "tws", "noise canceling", "anc",
+    "హెడ్‌ఫోన్", "ఇయర్‌ఫోన్", "స్పీకర్", "ఆడియో", "हेडफोन", "इयरफोन", "स्पीकर", "ऑडियो"
+  ],
+  Accessories: [
+    "mouse", "keyboard", "monitor", "dock", "hub", "ssd", "charger", "cable", "stand", "pad", "drive",
+    "మౌస్", "కీబోర్డ్", "మానిటర్", "माउस", "कीबोर्ड", "मॉनिटर"
+  ],
+  Wearables: [
+    "watch", "smartwatch", "fitness", "band", "tracker", "ecg", "wearable",
+    "వాచ్", "స్మార్ట్‌వాచ్", "బ్యాండ్", "घड़ी", "स्मार्टवॉच", "बैंड"
+  ],
+  Kitchen: [
+    "kitchen", "fryer", "air fryer", "coffee", "cooker", "blender", "juicer", "toaster", "appliance",
+    "కిచెన్", "కాఫీ", "వంట", "किचन", "कॉफी", "एयर फ्रायर"
+  ],
+  Gifts: [
+    "gift", "tablet", "drawing", "stylus", "art", "pencil", "pen", "journal", "sketch", "book",
+    "బహుమతి", "గిఫ్ట్", "డ్రాయింగ్", "ఆర్ట్", "उपहार", "गिफ्ट", "ड्राइंग", "आर्ट"
+  ],
+  Cameras: [
+    "camera", "drone", "tripod", "lens", "gopro", "photography", "vlog", "video",
+    "కెమెరా", "డ్రోన్", "ఫోటోగ్రఫీ", "कैमरा", "ड्रोन", "फोटोग्राफी"
+  ],
+  Gaming: [
+    "gaming", "game", "console", "playstation", "ps5", "xbox", "controller", "joystick",
+    "గేమింగ్", "గేమ్", "గేమింగ్ ఛైర్", "गेमिंग", "गेम", "कंसोल"
+  ],
+  SmartHome: [
+    "smart home", "bulb", "light", "security camera", "alexa", "echo", "nest", "vacuum", "robot",
+    "స్మార్ట్ హోమ్", "బల్బ్", "स्मार्ट होम", "बल्ब"
+  ],
+};
+
+const BRANDS = [
+  "Apple", "Samsung", "Lenovo", "Dell", "HP", "ASUS", "OnePlus", "Google", "Pixel",
+  "Sony", "Bose", "Sennheiser", "JBL", "boAt", "Logitech", "Razer", "Keychron",
+  "Philips", "Garmin", "Amazfit", "Noise", "XP-Pen", "Faber-Castell", "DJI", "GoPro",
+  "Nintendo", "Microsoft", "Anker", "Nothing", "Canon", "Nikon"
+];
+
 export const parseIntentDeterministic = (text: string): ParsedIntent => {
   const language = detectLanguage(text);
   const lower = text.toLowerCase();
   const requirements: string[] = [];
+  const keywords: string[] = [];
 
+  // Determine High-Level Intent
   let intent: ParsedIntent["intent"] = "search";
 
   if (
-    lower.includes("trending") ||
-    lower.includes("popular") ||
-    lower.includes("best selling") ||
-    lower.includes("హాట్") ||
-    lower.includes("ట్రెండింగ్") ||
-    lower.includes("ट्रेंडिंग") ||
-    lower.includes("लोकप्रिय")
+    lower.includes("trending") || lower.includes("popular") || lower.includes("best selling") ||
+    lower.includes("హాట్") || lower.includes("ట్రెండింగ్") || lower.includes("ट्रेंडिंग") || lower.includes("लोकप्रिय")
   ) {
     intent = "trending";
   } else if (
-    lower.includes("better price") ||
-    lower.includes("discount") ||
-    lower.includes("cheaper") ||
-    lower.includes("offer") ||
-    lower.includes("bargain") ||
-    lower.includes("ధర తగ్గించు") ||
-    lower.includes("డిస్కౌంట్") ||
-    lower.includes("మంచి ధర") ||
-    lower.includes("తక్కువ ధర") ||
-    lower.includes("डिस्काउंट") ||
-    lower.includes("सस्ता") ||
-    lower.includes("कम दाम") ||
-    lower.includes("ऑफर")
+    lower.includes("better price") || lower.includes("discount") || lower.includes("cheaper") ||
+    lower.includes("offer") || lower.includes("bargain") || lower.includes("ధర తగ్గించు") ||
+    lower.includes("డిస్కౌంట్") || lower.includes("మంచి ధర") || lower.includes("डिस्काउंट") ||
+    lower.includes("सस्ता") || lower.includes("कम दाम")
   ) {
     intent = "negotiate";
   } else if (
-    lower.includes("compare") ||
-    lower.includes("difference") ||
-    lower.includes("vs") ||
-    lower.includes("పోల్చు") ||
-    lower.includes("తేడా") ||
-    lower.includes("तुलना") ||
-    lower.includes("फर्क")
+    lower.includes("compare") || lower.includes("difference") || lower.includes("vs") ||
+    lower.includes("పోల్చు") || lower.includes("తేడా") || lower.includes("तुलना")
   ) {
     intent = "compare";
   } else if (
-    lower.includes("goes well with") ||
-    lower.includes("accessories") ||
-    lower.includes("pairs with") ||
-    lower.includes("దీనికి సరిపోయే") ||
-    lower.includes("యాక్సెసరీలు") ||
-    lower.includes("इसके साथ क्या अच्छा लगेगा")
+    lower.includes("accessories") || lower.includes("goes well with") || lower.includes("pairs with")
   ) {
     intent = "accessories";
   }
 
+  // Detect Category
   let category: string | undefined;
-
-  if (
-    lower.includes("laptop") ||
-    lower.includes("computer") ||
-    lower.includes("notebook") ||
-    lower.includes("లాప్‌టాప్") ||
-    lower.includes("కంప్యూటర్") ||
-    lower.includes("लैपटॉप")
-  ) {
-    category = "Laptops";
-  } else if (
-    lower.includes("phone") ||
-    lower.includes("mobile") ||
-    lower.includes("smartphone") ||
-    lower.includes("ఫోన్") ||
-    lower.includes("మొబైల్") ||
-    lower.includes("फोन") ||
-    lower.includes("स्मार्टफोन")
-  ) {
-    category = "Phones";
-  } else if (
-    lower.includes("headphone") ||
-    lower.includes("earbud") ||
-    lower.includes("audio") ||
-    lower.includes("earphone") ||
-    lower.includes("హెడ్‌ఫోన్") ||
-    lower.includes("ఇయర్‌బడ్స్") ||
-    lower.includes("हेडफोन") ||
-    lower.includes("इयरबड्स")
-  ) {
-    category = "Headphones";
-  } else if (
-    lower.includes("mouse") ||
-    lower.includes("charger") ||
-    lower.includes("bag") ||
-    lower.includes("backpack") ||
-    lower.includes("stand") ||
-    lower.includes("మౌస్") ||
-    lower.includes("చార్జర్") ||
-    lower.includes("బ్యాగ్") ||
-    lower.includes("माउस") ||
-    lower.includes("चार्जर") ||
-    lower.includes("बैग")
-  ) {
-    category = "Accessories";
-  } else if (
-    lower.includes("gift") ||
-    lower.includes("daughter") ||
-    lower.includes("birthday") ||
-    lower.includes("tablet") ||
-    lower.includes("art") ||
-    lower.includes("drawing") ||
-    lower.includes("బహుమతి") ||
-    lower.includes("గిఫ్ట్") ||
-    lower.includes("కూతురు") ||
-    lower.includes("పుట్టినరోజు") ||
-    lower.includes("డ్రాయింగ్") ||
-    lower.includes("उपहार") ||
-    lower.includes("गिफ्ट") ||
-    lower.includes("बेटी") ||
-    lower.includes("जन्मदिन") ||
-    lower.includes("ड्राइंग")
-  ) {
-    category = "Gifts";
-  } else if (
-    lower.includes("book") ||
-    lower.includes("kindle") ||
-    lower.includes("పుస్తకం") ||
-    lower.includes("కితాబ్") ||
-    lower.includes("किताब")
-  ) {
-    category = "Books";
-  } else if (
-    lower.includes("monitor") ||
-    lower.includes("screen") ||
-    lower.includes("డిస్‌ప్లే") ||
-    lower.includes("मॉनिटर")
-  ) {
-    category = "Monitors";
-  } else if (
-    lower.includes("kitchen") ||
-    lower.includes("air fryer") ||
-    lower.includes("వంటగది") ||
-    lower.includes("रसोई")
-  ) {
-    category = "Kitchen";
+  for (const [cat, words] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (words.some(w => lower.includes(w))) {
+      category = cat;
+      break;
+    }
   }
 
-  if (lower.includes("programming") || lower.includes("coding") || lower.includes("developer") || lower.includes("ప్రోగ్రామింగ్") || lower.includes("కోడింగ్") || lower.includes("कोडिंग")) {
-    requirements.push("programming");
-  }
-  if (lower.includes("camera") || lower.includes("ఫోటో") || lower.includes("కెమెరా") || lower.includes("कैमरा")) {
-    requirements.push("good camera");
-  }
-  if (lower.includes("battery") || lower.includes("బ్యాటరీ") || lower.includes("बैटरी")) {
-    requirements.push("long battery");
-  }
-  if (lower.includes("gaming") || lower.includes("గేమింగ్") || lower.includes("गेमिंग")) {
-    requirements.push("gaming");
-  }
-  if (lower.includes("16gb") || lower.includes("16 gb")) {
-    requirements.push("16GB RAM");
+  // Detect Brand
+  let brand: string | undefined;
+  for (const b of BRANDS) {
+    if (lower.includes(b.toLowerCase())) {
+      brand = b;
+      keywords.push(b);
+      break;
+    }
   }
 
+  // Detect Feature Requirements
+  const FEATURE_MAP: Record<string, string> = {
+    "programming": "programming",
+    "coding": "programming",
+    "developer": "programming",
+    "software": "programming",
+    "కోడింగ్": "programming",
+    "ప్రోగ్రామింగ్": "programming",
+    "कोडिंग": "programming",
+    "camera": "good camera",
+    "photography": "good camera",
+    "కెమెరా": "good camera",
+    "कैमरा": "good camera",
+    "gaming": "gaming",
+    "games": "gaming",
+    "battery": "long battery life",
+    "battery life": "long battery life",
+    "బ్యాటరీ": "long battery life",
+    "बैटरी": "long battery life",
+    "quiet": "quiet typing",
+    "silent": "quiet typing",
+    "office": "office productivity",
+    "student": "student use",
+    "lightweight": "lightweight portability",
+    "travel": "travel portability",
+    "4k": "4K display",
+    "wireless": "wireless connectivity",
+    "noise canceling": "active noise canceling",
+    "anc": "active noise canceling",
+    "ergonomic": "ergonomic comfort",
+  };
+
+  for (const [trigger, requirement] of Object.entries(FEATURE_MAP)) {
+    if (lower.includes(trigger) && !requirements.includes(requirement)) {
+      requirements.push(requirement);
+      keywords.push(trigger);
+    }
+  }
+
+  // Extract clean search tokens (excluding stop words)
+  const stopWords = new Set([
+    "i", "need", "want", "looking", "for", "a", "an", "the", "under", "below", "with", "and", "or",
+    "in", "to", "of", "best", "good", "me", "show", "give", "please", "can", "you", "get",
+    "నాకు", "కావాలి", "ఒక", "మరియు", "లో", "ఉన్న", "मुझे", "चाहिए", "एक", "के", "लिए", "वाला", "वाले"
+  ]);
+
+  const rawWords = text.replace(/[^a-zA-Z0-9\u0C00-\u0C7F\u0900-\u097F\s]/g, " ").split(/\s+/);
+  for (const w of rawWords) {
+    const cleanWord = w.toLowerCase().trim();
+    if (cleanWord.length >= 3 && !stopWords.has(cleanWord) && !keywords.includes(cleanWord)) {
+      keywords.push(cleanWord);
+    }
+  }
+
+  // Extract Budget
   const { budgetMax, budgetMin } = extractBudget(text);
 
   return {
     intent,
     category,
+    brand,
     budgetMax,
     budgetMin,
     requirements,
+    keywords,
     language,
     confidence: 0.95,
     rawText: text,

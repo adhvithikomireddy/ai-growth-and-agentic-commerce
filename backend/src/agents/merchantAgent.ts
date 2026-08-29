@@ -34,14 +34,17 @@ export const handleMerchantA2ARequest = async (packet: A2APacket): Promise<A2APa
   try {
     switch (packet.messageType) {
       case "product_search": {
-        const { category, minPrice, maxPrice, requirements, limit } = packet.payload;
+        const { query, category, brand, keywords, minPrice, maxPrice, requirements, limit } = packet.payload;
         const result = await searchCatalog({
+          query,
           category,
+          brand,
+          keywords,
           minPrice,
           maxPrice,
           inStockOnly: true,
           limit: limit || 6,
-          sortBy: "rating",
+          sortBy: "relevance",
         });
 
         broadcastA2AEvent({

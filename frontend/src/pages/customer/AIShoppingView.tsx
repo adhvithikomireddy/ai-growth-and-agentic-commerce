@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from "react";
-import { Sparkles, Bot, Layers, ArrowRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sparkles, Bot, Layers, ArrowRight, ShieldCheck, Lock, AlertTriangle, X } from "lucide-react";
 import { Product, A2AActivityEvent } from "../../types/index.js";
 import { api } from "../../api/client.js";
 import { useLanguage } from "../../context/LanguageContext.js";
@@ -19,6 +19,13 @@ export const AIShoppingView: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [accessories, setAccessories] = useState<Product[]>([]);
   const [timelineEvents, setTimelineEvents] = useState<A2AActivityEvent[]>([]);
+
+  // Track 01 Bar Failure Simulation state
+  const [simulationResult, setSimulationResult] = useState<{
+    type: "BOUND_EXCEEDED" | "GATE_PIN_REQUIRED";
+    title: string;
+    description: string;
+  } | null>(null);
 
   // Modals state
   const [activeModalProduct, setActiveModalProduct] = useState<Product | null>(null);
@@ -119,6 +126,88 @@ export const AIShoppingView: React.FC = () => {
         <p className="text-sm text-[#667067] leading-relaxed">
           Express what you need in plain English, हिन्दी, or తెలుగు. Buyer and Merchant Agents communicate through structured A2A protocols with authoritative verified pricing and human-controlled spending guardrails.
         </p>
+      </div>
+
+      {/* Track 01 Architecture Bar: The Bar */}
+      <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white border border-[#BBF7D0] shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#166534] bg-[#DCFCE7] px-2 py-0.5 rounded-md">
+                Track 01: Razorpay Buildathon
+              </span>
+              <span className="text-xs font-semibold text-[#172018]">Architecture Standards</span>
+            </div>
+            <p className="text-[11px] text-[#667067] mt-0.5">
+              Every money action explainable, bounded and gated. With audit trail and graceful failure handling.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setSimulationResult({
+                  type: "BOUND_EXCEEDED",
+                  title: "Failure Handled Gracefully: Negotiation Out-of-Bounds (50% Request)",
+                  description: "Buyer Agent requested an aggressive 50% discount. The Merchant Agent's policy engine bounded the transaction because store gross margin is 24%. It gracefully intercepted the breach and counter-offered the maximum allowable 10% discount rather than crashing or terminating the negotiation."
+                });
+              }}
+              className="text-[11px] font-semibold text-[#166534] bg-[#F0FDF4] border border-[#86EFAC] px-2.5 py-1.5 rounded-lg hover:bg-[#DCFCE7] transition-colors"
+            >
+              Simulate Bound Failure
+            </button>
+            <button
+              onClick={() => {
+                setSimulationResult({
+                  type: "GATE_PIN_REQUIRED",
+                  title: "Failure Handled Gracefully: Autonomous Spending Gate Breach",
+                  description: "Transaction value exceeds customer's autonomous spending threshold (₹2,000). The AI Firewall / Action Gateway intercepted the operation, halting unauthorized money movement until the customer enters their verified 4-digit security PIN."
+                });
+              }}
+              className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg hover:bg-amber-100 transition-colors"
+            >
+              Simulate Spending Gate
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Pillars Summary Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 text-[11px]">
+          <div className="p-2 rounded-lg bg-neutral-50 border border-[#E2E8F0]">
+            <span className="font-bold text-[#166534] block">1. Explainable</span>
+            <span className="text-[#667067] leading-tight block mt-0.5">Hardware & spec-citing AI justifications</span>
+          </div>
+          <div className="p-2 rounded-lg bg-neutral-50 border border-[#E2E8F0]">
+            <span className="font-bold text-[#166534] block">2. Bounded</span>
+            <span className="text-[#667067] leading-tight block mt-0.5">Strict 10% max merchant discount ceiling</span>
+          </div>
+          <div className="p-2 rounded-lg bg-neutral-50 border border-[#E2E8F0]">
+            <span className="font-bold text-[#166534] block">3. Gated</span>
+            <span className="text-[#667067] leading-tight block mt-0.5">4-digit PIN security gate before Razorpay</span>
+          </div>
+          <div className="p-2 rounded-lg bg-neutral-50 border border-[#E2E8F0]">
+            <span className="font-bold text-[#166534] block">4. Audit Trail</span>
+            <span className="text-[#667067] leading-tight block mt-0.5">Immutable MongoDB logs & live SSE</span>
+          </div>
+        </div>
+
+        {/* Simulation Output Banner */}
+        {simulationResult && (
+          <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-900 animate-in fade-in-50">
+            <div className="flex items-center justify-between font-bold mb-1">
+              <span className="flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
+                {simulationResult.title}
+              </span>
+              <button onClick={() => setSimulationResult(null)} className="text-amber-700 hover:text-amber-900">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-[11px] leading-relaxed text-amber-800">
+              {simulationResult.description}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Central Conversational AI Bar */}
