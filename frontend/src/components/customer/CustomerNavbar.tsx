@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShoppingBag, Sparkles, User as UserIcon, Shield, Globe, LogOut, Store, FileText } from "lucide-react";
+import { ShoppingBag, Sparkles, User as UserIcon, Shield, Globe, LogOut, Store, FileText, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.js";
 import { useCart } from "../../context/CartContext.js";
 import { useLanguage, SupportedLanguage } from "../../context/LanguageContext.js";
@@ -87,6 +87,17 @@ export const CustomerNavbar: React.FC<CustomerNavbarProps> = ({
                   {t("nav_orders")}
                 </button>
               )}
+              <button
+                onClick={() => setCurrentTab("settings")}
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  currentTab === "settings"
+                    ? "bg-[#DCFCE7] text-[#166534]"
+                    : "text-[#475548] hover:text-[#172018] hover:bg-neutral-50"
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Privacy & Settings</span>
+              </button>
             </nav>
           </div>
 

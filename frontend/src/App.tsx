@@ -14,6 +14,7 @@ import { Product } from "./types/index.js";
 import { ProductDetailsModal } from "./components/customer/ProductDetailsModal.js";
 import { NegotiationModal } from "./components/customer/NegotiationModal.js";
 import { ProductComparisonModal } from "./components/customer/ProductComparisonModal.js";
+import { SettingsView } from "./pages/customer/SettingsView.js";
 import { ShieldCheck, Cpu } from "lucide-react";
 
 const MainContent: React.FC = () => {
@@ -73,6 +74,7 @@ const MainContent: React.FC = () => {
           />
         )}
         {currentTab === "orders" && <OrdersView />}
+        {currentTab === "settings" && <SettingsView />}
         {currentTab === "merchant" && (
           <MerchantPortalView onBackToCustomer={() => setCurrentTab("shop")} />
         )}
