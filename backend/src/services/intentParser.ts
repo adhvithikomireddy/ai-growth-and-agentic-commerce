@@ -1,4 +1,4 @@
-﻿export interface ParsedIntent {
+export interface ParsedIntent {
   intent: "search" | "trending" | "negotiate" | "compare" | "accessories" | "general_query";
   category?: string;
   brand?: string;
@@ -138,10 +138,19 @@ export const parseIntentDeterministic = (text: string): ParsedIntent => {
     intent = "accessories";
   }
 
+const matchesWord = (text: string, target: string): boolean => {
+  if (/[\u0C00-\u0C7F\u0900-\u097F]/.test(target)) {
+    return text.includes(target);
+  }
+  const escaped = target.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+  const regex = new RegExp(`(^|[^a-zA-Z0-9])${escaped}([^a-zA-Z0-9]|$)`, "i");
+  return regex.test(text);
+};
+
   // Detect Category
   let category: string | undefined;
   for (const [cat, words] of Object.entries(CATEGORY_KEYWORDS)) {
-    if (words.some(w => lower.includes(w))) {
+    if (words.some(w => matchesWord(lower, w))) {
       category = cat;
       break;
     }
@@ -150,7 +159,7 @@ export const parseIntentDeterministic = (text: string): ParsedIntent => {
   // Detect Brand
   let brand: string | undefined;
   for (const b of BRANDS) {
-    if (lower.includes(b.toLowerCase())) {
+    if (matchesWord(lower, b.toLowerCase())) {
       brand = b;
       keywords.push(b);
       break;
@@ -190,7 +199,7 @@ export const parseIntentDeterministic = (text: string): ParsedIntent => {
   };
 
   for (const [trigger, requirement] of Object.entries(FEATURE_MAP)) {
-    if (lower.includes(trigger) && !requirements.includes(requirement)) {
+    if (matchesWord(lower, trigger) && !requirements.includes(requirement)) {
       requirements.push(requirement);
       keywords.push(trigger);
     }

@@ -1,4 +1,4 @@
-﻿import { Product, IProduct } from "../models/Product.js";
+import { Product, IProduct } from "../models/Product.js";
 import { Merchant } from "../models/Merchant.js";
 
 export interface CatalogSearchParams {
@@ -14,6 +14,15 @@ export interface CatalogSearchParams {
   sortBy?: "relevance" | "price_asc" | "price_desc" | "rating" | "trending";
 }
 
+const STOP_WORDS = new Set([
+  "show", "me", "a", "an", "the", "for", "and", "with", "or", "in", "to", "at", "by", "from",
+  "under", "below", "less", "than", "upto", "up", "about", "above", "more", "budget", "price",
+  "need", "want", "find", "looking", "give", "please", "can", "you", "some", "any",
+  "good", "best", "great", "top", "cheap", "affordable", "store", "buy", "purchase",
+  "item", "items", "product", "products", "device", "devices", "thing", "things",
+  "కావాలి", "చూపించు", "ఉన్న", "మంచి", "చాహియే", "దిఖావో", "అచ్చా"
+]);
+
 export const searchCatalog = async (params: CatalogSearchParams) => {
   const {
     query,
@@ -28,40 +37,43 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
     sortBy = "relevance",
   } = params;
 
-  const filter: any = {};
+  const baseFilter: any = {};
 
   if (category && category !== "All") {
-    filter.category = new RegExp(`^${category}$`, "i");
+    baseFilter.category = new RegExp(`^${category}$`, "i");
   }
 
   if (minPrice !== undefined || maxPrice !== undefined) {
-    filter.price = {};
-    if (minPrice !== undefined) filter.price.$gte = minPrice;
-    if (maxPrice !== undefined) filter.price.$lte = maxPrice;
+    baseFilter.price = {};
+    if (minPrice !== undefined) baseFilter.price.$gte = minPrice;
+    if (maxPrice !== undefined) baseFilter.price.$lte = maxPrice;
   }
 
   if (inStockOnly) {
-    filter.stock = { $gt: 0 };
+    baseFilter.stock = { $gt: 0 };
   }
 
-  // Collect search terms from query and keywords
-  const searchTerms: string[] = [...keywords];
-  if (brand && !searchTerms.includes(brand.toLowerCase())) {
-    searchTerms.push(brand.toLowerCase());
+  // Collect clean search terms without conversational stop words or numeric bounds
+  const candidateTerms: string[] = [...keywords];
+  if (brand && !candidateTerms.includes(brand.toLowerCase())) {
+    candidateTerms.push(brand.toLowerCase());
   }
 
   if (query && query.trim()) {
-    const rawTokens = query.trim().split(/\s+/).map(t => t.toLowerCase());
+    const rawTokens = query.trim().toLowerCase().split(/[^\w\u0C00-\u0C7F\u0900-\u097F]+/).filter(Boolean);
     for (const token of rawTokens) {
-      if (token.length >= 3 && !searchTerms.includes(token)) {
-        searchTerms.push(token);
+      if (token.length >= 2 && !STOP_WORDS.has(token) && !/^\d+$/.test(token)) {
+        if (!candidateTerms.includes(token)) {
+          candidateTerms.push(token);
+        }
       }
     }
   }
 
-  // If search terms exist, filter with $or regex across fields
-  if (searchTerms.length > 0) {
-    const orConditions = searchTerms.map(term => ({
+  let matchedProducts: any[] = [];
+
+  if (candidateTerms.length > 0) {
+    const termOrFilters = candidateTerms.map(term => ({
       $or: [
         { name: { $regex: term, $options: "i" } },
         { description: { $regex: term, $options: "i" } },
@@ -69,40 +81,84 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
         { "specifications.Brand": { $regex: term, $options: "i" } },
       ]
     }));
-    filter.$and = orConditions.map(c => ({ $or: c.$or }));
+
+    const searchFilter = {
+      ...baseFilter,
+      $or: termOrFilters.flatMap(f => f.$or),
+    };
+
+    matchedProducts = await Product.find(searchFilter).limit(100);
   }
 
-  let sortCriteria: any = { createdAt: -1 };
-  if (sortBy === "price_asc") sortCriteria = { price: 1 };
-  else if (sortBy === "price_desc") sortCriteria = { price: -1 };
-  else if (sortBy === "rating") sortCriteria = { rating: -1 };
-  else if (sortBy === "trending") sortCriteria = { salesCount: -1, viewCount: -1 };
-  else if (sortBy === "relevance") sortCriteria = { rating: -1, salesCount: -1 };
-
-  const skip = (page - 1) * limit;
-  let [products, total] = await Promise.all([
-    Product.find(filter).sort(sortCriteria).skip(skip).limit(limit),
-    Product.countDocuments(filter),
-  ]);
-
-  // Fallback: If strict AND returned 0 results, retry with looser OR matching
-  if (products.length === 0 && searchTerms.length > 0) {
-    delete filter.$and;
-    filter.$or = searchTerms.map(term => ({ name: { $regex: term, $options: "i" } }));
-    
-    [products, total] = await Promise.all([
-      Product.find(filter).sort(sortCriteria).skip(skip).limit(limit),
-      Product.countDocuments(filter),
-    ]);
+  // Fallback: If no term matches found or empty search terms, retrieve from baseFilter
+  if (matchedProducts.length === 0) {
+    matchedProducts = await Product.find(baseFilter).sort({ rating: -1, salesCount: -1 }).limit(limit * 3);
   }
 
-  // Final fallback: Return top rated products in category or catalog if still 0
-  if (products.length === 0) {
-    const fallbackFilter: any = { stock: { $gt: 0 } };
-    if (category && category !== "All") fallbackFilter.category = new RegExp(`^${category}$`, "i");
-    products = await Product.find(fallbackFilter).sort({ rating: -1 }).limit(limit);
-    total = products.length;
+  // High-precision relevance scoring
+  const qLower = (query || "").toLowerCase();
+  const scored = matchedProducts.map((p) => {
+    const pName = p.name.toLowerCase();
+    const pTags = (p.tags || []).map((t: string) => t.toLowerCase());
+    const pDesc = (p.description || "").toLowerCase();
+    let score = 0;
+
+    // Full query match in name (highest confidence)
+    if (qLower && pName.includes(qLower)) {
+      score += 150;
+    }
+
+    // Direct brand match
+    if (brand && pName.includes(brand.toLowerCase())) {
+      score += 60;
+    }
+
+    // Individual term hits
+    for (const term of candidateTerms) {
+      if (pName.includes(term)) score += 35;
+      if (pTags.some((t: string) => t.includes(term))) score += 20;
+      if (pDesc.includes(term)) score += 10;
+    }
+
+    // Price within budget bonus
+    if (maxPrice && p.price <= maxPrice) {
+      score += 25;
+    }
+
+    // Rating & sales as tie breakers
+    score += (p.rating || 0) * 3;
+    score += Math.min(20, (p.salesCount || 0) / 40);
+
+    return { product: p, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Deduplicate products so different models are presented with high diversity
+  const seenBaseNames = new Set<string>();
+  const diverseProducts: any[] = [];
+
+  for (const item of scored) {
+    const baseName = item.product.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase();
+    if (!seenBaseNames.has(baseName)) {
+      seenBaseNames.add(baseName);
+      diverseProducts.push(item.product);
+    }
+    if (diverseProducts.length >= limit) break;
   }
+
+  // If diversity filter is smaller than limit, fill remaining slots
+  if (diverseProducts.length < limit) {
+    for (const item of scored) {
+      if (!diverseProducts.some(p => p.productId === item.product.productId)) {
+        diverseProducts.push(item.product);
+      }
+      if (diverseProducts.length >= limit) break;
+    }
+  }
+
+  const products = diverseProducts;
+  const total = products.length;
 
   return {
     products,
