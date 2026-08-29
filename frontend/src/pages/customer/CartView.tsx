@@ -148,26 +148,25 @@ export const CartView: React.FC<{ onExplore: () => void; onOpenAuth: () => void 
         modal: {
           ondismiss: () => {
             setLoadingPayment(false);
-            setRecoveryErrorMessage("Payment authorization was cancelled or closed before completion.");
-            setRecoveryModalOpen(true);
           },
         },
       };
 
       const rzp = new window.Razorpay(options);
+      // ONLY trigger recovery if the payment gateway explicitly returns a failed payment (e.g., user clicks 'Fail' in test payment)
       rzp.on("payment.failed", (response: any) => {
         setLoadingPayment(false);
-        setRecoveryErrorMessage(
-          response?.error?.description || response?.error?.reason || "Bank authorization was declined."
-        );
+        const failDescription =
+          response?.error?.description ||
+          response?.error?.reason ||
+          "Payment was declined or marked as failed in payment gateway.";
+        setRecoveryErrorMessage(failDescription);
         setRecoveryModalOpen(true);
       });
       rzp.open();
     } catch (err: any) {
       setAuthError(err.message || "Failed to initialize payment.");
       setLoadingPayment(false);
-      setRecoveryErrorMessage(err.message || "Payment service temporarily unreachable.");
-      setRecoveryModalOpen(true);
     }
   };
 
