@@ -21,7 +21,6 @@ export const connectDatabase = async (): Promise<boolean> => {
     logger.info("Connecting to MongoDB Atlas...");
     await mongoose.connect(env.MONGODB_URI, {
       serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 10000,
     });
     logger.info("Successfully connected to MongoDB Atlas (Persistent Storage Active).");
     isConnecting = false;
