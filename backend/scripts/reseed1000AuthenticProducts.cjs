@@ -1,4 +1,4 @@
-﻿const mongoose = require("../node_modules/mongoose");
+const mongoose = require("../node_modules/mongoose");
 require("../node_modules/dotenv").config({ path: "backend/.env" });
 
 const AUTHENTIC_CATALOG = [
@@ -174,12 +174,8 @@ function build1000AuthenticProducts() {
     const salesCount = 50 + ((i * 23) % 950);
     const stock = 12 + ((i * 7) % 110);
 
-    // Make distinct Imgix parameter
-    const cropModes = ["entropy", "center", "faces", "edges"];
-    const crop = cropModes[i % cropModes.length];
-    const exp = ((i % 5) - 2) * 3;
-    const sat = 100 + ((i % 4) * 6);
-    const imageUrl = `${template.image}&crop=${crop}&exp=${exp}&sat=${sat}&sku=SKU_${prodIndex}`;
+    // Clean, direct, stable image URL with standard web sizing
+    const imageUrl = template.image;
 
     const specifications = {
       Brand: brand,

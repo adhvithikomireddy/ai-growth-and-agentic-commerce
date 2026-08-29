@@ -25,37 +25,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const { addToCart } = useCart();
   const { t } = useLanguage();
   const [added, setAdded] = React.useState(false);
-  const [imgSrc, setImgSrc] = React.useState(product.imageUrl);
-
-  React.useEffect(() => {
-    setImgSrc(product.imageUrl);
-  }, [product.imageUrl]);
-
-  const getCategoryFallback = (cat: string, name: string) => {
-    const lower = (name + " " + cat).toLowerCase();
-    if (lower.includes("phone") || lower.includes("pixel") || lower.includes("apple") || lower.includes("oneplus")) {
-      return "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("laptop") || lower.includes("ultrabook") || lower.includes("lenovo") || lower.includes("macbook")) {
-      return "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("headphone") || lower.includes("earbud") || lower.includes("sound") || lower.includes("audio")) {
-      return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("watch") || lower.includes("band") || lower.includes("fitness")) {
-      return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("chair") || lower.includes("game") || lower.includes("console") || lower.includes("controller")) {
-      return "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("camera") || lower.includes("drone") || lower.includes("tripod")) {
-      return "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&auto=format&fit=crop&q=80";
-    }
-    if (lower.includes("fryer") || lower.includes("cooker") || lower.includes("coffee") || lower.includes("kitchen")) {
-      return "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=800&auto=format&fit=crop&q=80";
-    }
-    return "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=800&auto=format&fit=crop&q=80";
-  };
 
   const handleAdd = async () => {
     await addToCart(product.productId, 1, product.discountPercent);
@@ -70,13 +39,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Product Image Area */}
       <div className="relative w-full aspect-16/10 bg-neutral-100 overflow-hidden">
         <img
-          src={imgSrc}
-          alt=""
+          src={product.imageUrl}
+          alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
-          onError={() => {
-            setImgSrc(getCategoryFallback(product.category, product.name));
-          }}
         />
 
         {/* Availability Badge */}
