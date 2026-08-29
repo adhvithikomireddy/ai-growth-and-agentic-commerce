@@ -36,8 +36,11 @@ app.use(
   cors({
     origin: (origin: any, callback: any) => {
       // Allow requests with no origin (like mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV === "development") {
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.endsWith(".vercel.app") ||
+        env.NODE_ENV === "development"
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS policy violation: Unauthorized origin."));
