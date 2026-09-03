@@ -39,12 +39,13 @@
 5. [Deep Dive into Core Subsystems](#-deep-dive-into-core-subsystems)
    - [A. Agent-to-Agent (A2A) Protocol & SSE Stream](#a-agent-to-agent-a2a-protocol--sse-stream)
    - [B. Multi-Lingual Natural Language Shopping & Intent Parser](#b-multi-lingual-natural-language-shopping--intent-parser)
-   - [C. 1,000+ Unique Authentic Product Catalog + Sub-₹1,000 Affordable Range](#c-1000-unique-authentic-product-catalog--sub-1000-affordable-range)
-   - [D. Dynamic Campaign Suggestion & Merchant Revenue Engine](#d-dynamic-campaign-suggestion--merchant-revenue-engine)
-   - [E. Razorpay Payment Gateway & Cryptographic Verification](#e-razorpay-payment-gateway--cryptographic-verification)
-   - [F. Spending Guardrails & Biometric Liveness Verification (DPDP & RBI)](#f-spending-guardrails--biometric-liveness-verification-dpdp--rbi)
-   - [G. Application-Wide Dark Mode & Generative UI](#g-application-wide-dark-mode--generative-ui)
-   - [H. Crash-Proof Reliability (React Error Boundary & Process Guards)](#h-crash-proof-reliability-react-error-boundary--process-guards)
+   - [C. Reverse Shopping (Goal-First Autonomous Multi-Product Commerce)](#c-reverse-shopping-goal-first-autonomous-multi-product-commerce)
+   - [D. 1,000+ Unique Authentic Product Catalog + Sub-₹1,000 Affordable Range](#d-1000-unique-authentic-product-catalog--sub-1000-affordable-range)
+   - [E. Dynamic Campaign Suggestion & Merchant Revenue Engine](#e-dynamic-campaign-suggestion--merchant-revenue-engine)
+   - [F. Razorpay Payment Gateway & Cryptographic Verification](#f-razorpay-payment-gateway--cryptographic-verification)
+   - [G. Spending Guardrails & Biometric Liveness Verification (DPDP & RBI)](#g-spending-guardrails--biometric-liveness-verification-dpdp--rbi)
+   - [H. Application-Wide Dark Mode & Generative UI](#h-application-wide-dark-mode--generative-ui)
+   - [I. Crash-Proof Reliability (React Error Boundary & Process Guards)](#i-crash-proof-reliability-react-error-boundary--process-guards)
 6. [Complete API Reference](#-complete-api-reference)
 7. [Directory Structure](#-directory-structure)
 8. [Getting Started & Installation](#-getting-started)
@@ -60,15 +61,17 @@
 Traditional e-commerce forces customers through rigid filters, categories, and keyword searches, while merchants struggle to convert interest into larger basket sizes without expensive external ads. At the same time, the emergence of AI agent ecosystems requires merchants to expose machine-readable commerce capabilities so external AI buyer agents can discover, verify, negotiate, and transact directly with merchant systems.
 
 **NexCommerce** bridges this divide with an end-to-end, production-ready, full-stack agentic commerce platform:
-1. **Making Merchants AI-Readable & Sellable**: Exposing structured, authoritative AI-readable catalog capabilities (`/api/agent/catalog/*`) with real-time stock verification and policy-bounded negotiation.
-2. **Growing Merchant Revenue Proactively**: A private **Merchant AI Orchestrator** continuously analyzes inventory velocity, co-purchase patterns, and cart drop-offs, surfacing high-impact revenue opportunities (cross-sells, upsells, and bundles) that merchants can approve with a single click to activate live promotions.
-3. **Frictionless Multilingual Commerce**: Customers shop naturally in **English**, **हिन्दी (Hindi)**, and **తెలుగు (Telugu)** without having to understand APIs, agent protocols, or complex filters.
-4. **Deterministic Security & Authoritative Money Actions**: An AI Firewall and Spending Policy Engine enforce human-in-the-loop authorization thresholds, re-validating authoritative database pricing before initiating **Razorpay TEST MODE** payments with server-side HMAC-SHA256 signature verification.
+1. **Reverse Shopping (Goal-First Commerce)**: Enables customers to describe high-level goals (*"I want to create a comfortable study setup for under ₹15,000"* or *"I want to start working out at home"*) while the AI decomposes the goal into functional requirements and architects multi-tier solutions from authentic hardware with zero hallucination.
+2. **Making Merchants AI-Readable & Sellable**: Exposing structured, authoritative AI-readable catalog capabilities (`/api/agent/catalog/*`) with real-time stock verification and policy-bounded negotiation.
+3. **Growing Merchant Revenue Proactively**: A private **Merchant AI Orchestrator** continuously analyzes inventory velocity, co-purchase patterns, and cart drop-offs, surfacing high-impact revenue opportunities (cross-sells, upsells, and bundles) that merchants can approve with a single click to activate live promotions.
+4. **Frictionless Multilingual Commerce**: Customers shop naturally in **English**, **हिन्दी (Hindi)**, and **తెలుగు (Telugu)** without having to understand APIs, agent protocols, or complex filters.
+5. **Deterministic Security & Authoritative Money Actions**: An AI Firewall and Spending Policy Engine enforce human-in-the-loop authorization thresholds, re-validating authoritative database pricing before initiating **Razorpay TEST MODE** payments with server-side HMAC-SHA256 signature verification.
 
 ---
 
 ## ✨ Key Features
 
+- 🎯 **Reverse Shopping (Goal-First Autonomous Multi-Product Commerce)**: Customers enter goals rather than product names. The AI analyzes outcomes, extracts constraints, formulates required functional pillars, generates 3-tier strategies (**Budget**, **Balanced**, **Premium**), explains "Why this?" citing real specs, allows component swaps via an alternatives drawer, and provides 1-click multi-item checkout.
 - 🤖 **Autonomous Agent-to-Agent (A2A) Commerce**: Dedicated Buyer Agent and Merchant Agent communicating via structured, typed JSON packets streamed in real-time via Server-Sent Events (SSE).
 - 🧠 **Dynamic AI Campaign Suggestion Engine**: Server-side intelligence engine that analyzes live product velocity, margins, and affinities to propose 4 strategic campaign archetypes (Flash Clearances, Ecosystem Bundles, Category Surge Events, and Cart Cross-Sells).
 - 🔄 **Working "Refresh Intelligence"**: Instant store intelligence recalculation with animated spinning indicator, live KPI metrics refresh, and dynamic revenue opportunity generation.
@@ -206,12 +209,40 @@ sequenceDiagram
 - **Hybrid Relevance Scoring**: Balances text match relevancy with budget proximity:
   $$\text{Score} = \text{TextMatch} + \max\left(0, \frac{\text{BudgetMax} - \text{Price}}{\text{BudgetMax} / 40}\right)$$
 
-### C. 1,000+ Unique Authentic Product Catalog + Sub-₹1,000 Affordable Range
+### C. Reverse Shopping (Goal-First Autonomous Multi-Product Commerce)
+Traditional e-commerce requires users to know specific product models and navigate search filters. Reverse Shopping fundamentally changes this interaction model:
+- **Goal Outcome Understanding**: Decomposes high-level natural language goals (*"I want to create a comfortable study setup for under ₹15,000"* or *"I want to start working out at home"*) into 2–4 essential functional requirements (e.g. Primary Computing, Ergonomic Comfort, Focus Audio).
+- **Multi-Tier Solution Architecting**:
+  - **Essential Budget Tier**: Minimizes expenditure while ensuring core functional pillars are met.
+  - **Recommended Balanced Tier**: Sweet-spot combining high user ratings (★), balanced hardware specs, and optimal value.
+  - **Pro Performance Tier**: Flagship hardware for peak durability and performance.
+- **Spec-Citing "Why This?" Justifications**: Connects the customer's goal to concrete hardware specifications (noise cancellation, battery life, RAM, ergonomic cushioning, IPX water resistance).
+- **Smart Budget Deficit & Savings Tracking**: Real-time calculation of Total Cost, Budget Cap, and Savings, with honest over-budget warnings if ideal equipment exceeds the ceiling.
+- **Component Alternatives Drawer**: Customers can swap individual components with authentic catalog alternatives or remove items they already own, instantly recalculating the total.
+- **One-Click Multi-Item Checkout**: Adds all solution components to the cart simultaneously.
+
+```
+USER GOAL: "Create a comfortable study setup for under ₹15,000"
+   │
+   ▼
+AI GOAL DECOMPOSITION
+   ├── Pillar 1: Core Computing & Note Taking ──> Nothing Phone (2) 5G (₹36,599) / Galaxy Tab
+   ├── Pillar 2: Ergonomic Desk Comfort       ──> AmazonBasics Memory Foam Mouse Pad (₹409)
+   └── Pillar 3: Focus Audio & Lighting       ──> boAt BassHeads 100 Wired Earphones (₹379)
+   │
+   ▼
+3-TIER STRATEGIES: Budget (Save ₹5.5k) | Balanced (Sweet-spot) | Premium (Pro)
+   │
+   ▼
+ONE-CLICK ADD ALL TO CART ──> Instant Razorpay Test Checkout
+```
+
+### D. 1,000+ Unique Authentic Product Catalog + Sub-₹1,000 Affordable Range
 - **1,000 Core Products across 10 Categories**: Phones, Laptops, Audio, Wearables, Tablets, Gaming, Cameras, SmartHome, Accessories, and Gifts.
 - **100% Unique Image Guarantee**: Every catalog product contains a verified, distinct Wikimedia Commons or Unsplash CDN image URL (`distinct("imageUrl").length === 1000`).
 - **122 Sub-₹1,000 Budget Items**: Authentic products priced from ₹199 to ₹999 (boAt micro-USB cables ₹259, boAt BassHeads ₹379, Realme Buds ₹579, SanDisk 64GB MicroSD ₹439, Zebronics wireless mouse ₹239).
 
-### D. Dynamic Campaign Suggestion & Merchant Revenue Engine
+### E. Dynamic Campaign Suggestion & Merchant Revenue Engine
 - **Server-Side Engine (`campaignSuggestionService.ts`)**: Continuously analyzes catalog inventory levels, sales velocity, and product co-views to propose 4 campaign archetypes:
   1. **Inventory Velocity Clearance**: Flags high-stock surplus items and recommends a 15% flash liquidation.
   2. **AI Ecosystem Power Bundle**: Matches flagship devices with complementary audio/peripherals for 10% bundle discounts.
@@ -219,7 +250,7 @@ sequenceDiagram
   4. **Instant Checkout Cross-Sell**: Suggests high-converting sub-₹1,000 companion add-ons at cart review.
 - **Interactive Approval**: Merchants approve suggestions with 1 click, instantly creating a live `Campaign` record in MongoDB and broadcasting an A2A event.
 
-### E. Razorpay Payment Gateway & Cryptographic Verification
+### F. Razorpay Payment Gateway & Cryptographic Verification
 - **Pre-Payment Verification**: Re-checks live stock in MongoDB and calculates the authoritative final total in paise before initiating the Razorpay order.
 - **Strict Payment Failure Handling**: Preserves customer cart state and offers one-click retry if Razorpay triggers `payment.failed`.
 - **Server-Side HMAC-SHA256 Verification**:
@@ -231,18 +262,18 @@ sequenceDiagram
   ```
 - **Authoritative Receipts**: Produces downloadable tax receipts with merchant GSTIN (`29AABCU9603R1ZM`), itemized discounts, and transaction IDs.
 
-### F. Spending Guardrails & Biometric Liveness Verification (DPDP & RBI)
+### G. Spending Guardrails & Biometric Liveness Verification (DPDP & RBI)
 - **Autonomous Spending Threshold**: Customers configure an auto-spend ceiling (e.g. ₹2,000). Purchases exceeding this amount trigger a 4-digit security PIN prompt.
 - **Biometric 3D Liveness Check**: Client-side optical blinking and depth check for high-value orders.
 - **Zero-Card Retention**: Full compliance with India's **DPDP Act 2023** and **RBI Tokenization Guidelines 2022**—card details are never stored on backend servers.
 - **UPI VPA Masking**: Masked identifiers (`****@okhdfcbank`) protect buyer privacy in merchant analytics.
 
-### G. Application-Wide Dark Mode & Generative UI
+### H. Application-Wide Dark Mode & Generative UI
 - **Theme Engine (`ThemeContext.tsx`)**: Synchronizes with `<html class="dark">` and persists preferences to `localStorage`.
 - **Deep Palette**: Background `#090D11`, Cards `#0F172A`, Borders `#334155`, glowing emerald accents `#22C55E`, and smooth transitions.
 - **Theme Toggles**: Accessible Sun ☀️ / Moon 🌙 switchers in Navbar, Merchant Portal, and Settings.
 
-### H. Crash-Proof Reliability (React Error Boundary & Process Guards)
+### I. Crash-Proof Reliability (React Error Boundary & Process Guards)
 - **React Error Boundary (`ErrorBoundary.tsx`)**: Prevents full-screen white crashes on UI errors and provides a 1-click self-healing session reset.
 - **Global Process Guards (`server.ts`)**: `uncaughtException` and `unhandledRejection` handlers capture runtime anomalies, keeping the HTTP server continuously operational.
 
@@ -293,6 +324,13 @@ sequenceDiagram
 | `POST` | `/api/merchant/opportunities/:id/dismiss`| Role | Dismisses an opportunity |
 | `GET` | `/api/merchant/campaigns` | Role | Lists all active and completed promotional campaigns |
 | `GET` | `/api/merchant/audit-logs` | Role | Retrieves immutable A2A transaction audit logs |
+
+### 6. Reverse Shopping Engine (`/api/reverse-shopping`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/reverse-shopping/analyze` | Public | Analyzes natural language goal statement, extracts constraints, generates 3-tier solutions with hardware spec justifications |
+| `POST` | `/api/reverse-shopping/refine` | Public | Applies conversational adjustments (*"Make it cheaper"*, *"I already have a mouse"*, *"Prioritize performance"*) |
+| `POST` | `/api/reverse-shopping/alternatives` | Public | Retrieves ranked in-stock catalog alternative products for a specific requirement pillar |
 
 ---
 
