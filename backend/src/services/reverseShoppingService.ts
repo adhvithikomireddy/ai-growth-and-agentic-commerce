@@ -71,7 +71,47 @@ interface GoalArchetype {
 
 const GOAL_ARCHETYPES: GoalArchetype[] = [
   {
-    keywords: ["study", "student", "college", "school", "homework", "exam", "reading", "learn"],
+    keywords: [
+      "workout", "work out", "working out", "gym", "gym setup", "fitness", "bodybuilding",
+      "exercise", "exercising", "training", "running", "runner", "yoga", "athletic",
+      "cardio", "sports", "weight loss", "health tracking", "smart scale", "fitness band",
+      "smartwatch fitness", "muscle recovery"
+    ],
+    title: "Home Fitness & Athletic Tracking Ecosystem",
+    priorities: ["Heart Rate Telemetry", "Sweat Resistance", "Motivating Audio", "Post-Workout Recovery"],
+    pillars: [
+      {
+        name: "Biometric Fitness Tracker & Smartwatch",
+        role: "Heart Rate & Active Calorie Telemetry",
+        description: "Tracks active workout metrics, heart-rate zones, GPS pace, and recovery sleep.",
+        searchCategories: ["Wearables"],
+        searchTerms: ["smart band", "band", "watch", "smartwatch", "fitness", "galaxy watch", "garmin", "apple watch"],
+        weight: 0.40,
+      },
+      {
+        name: "Sweatproof Athletic Workout Audio",
+        role: "High-Energy Athletic Motivation",
+        description: "Secure-fit, sweatproof Bluetooth earphones engineered to stay locked in during intense movement.",
+        searchCategories: ["Audio"],
+        searchTerms: ["neckband", "earbuds", "earphones", "wireless", "bass", "sports", "sweatproof"],
+        weight: 0.25,
+      },
+      {
+        name: "Smart Health Scale & Recovery Gear",
+        role: "Body Telemetry & Muscle Recovery",
+        description: "Measures body composition telemetry or aids in targeted muscle recovery and cardio training.",
+        searchCategories: ["SmartHome", "Accessories"],
+        searchTerms: ["scale", "smart scale", "jump rope", "smartrope", "massage gun", "theragun", "fitness", "gym"],
+        weight: 0.35,
+      },
+    ],
+  },
+  {
+    keywords: [
+      "study", "studying", "study setup", "student", "college", "school", "homework",
+      "exam", "reading", "learn", "learning", "academic", "desk", "desk setup",
+      "workspace", "coding", "coder", "programmer", "developer", "office", "work from home", "wfh", "home office"
+    ],
     title: "Ergonomic Study & Academic Productivity Setup",
     priorities: ["Ergonomics", "Focus", "Reliable Tech", "Portability"],
     pillars: [
@@ -88,7 +128,7 @@ const GOAL_ARCHETYPES: GoalArchetype[] = [
         role: "Comfort & Posture Support",
         description: "Prevents fatigue during extended study and writing sessions.",
         searchCategories: ["Accessories", "Gifts"],
-        searchTerms: ["mouse pad", "mouse", "pad", "chair", "stand", "cable"],
+        searchTerms: ["mouse pad", "pad", "chair", "stand", "wrist rest", "cushion"],
         weight: 0.15,
       },
       {
@@ -102,7 +142,36 @@ const GOAL_ARCHETYPES: GoalArchetype[] = [
     ],
   },
   {
-    keywords: ["gaming", "game", "gamer", "esports", "playstation", "xbox", "ps5", "controller"],
+    keywords: [
+      "coffee", "making coffee", "espresso", "latte", "cappuccino", "brew", "brewing",
+      "barista", "cafe", "kitchen", "cooking", "culinary", "baking", "cook", "chef", "breakfast", "meal prep", "air fryer"
+    ],
+    title: "Artisanal Home Cafe & Kitchen Cooking Setup",
+    priorities: ["Easy Cleaning", "Precision Brewing", "Speed", "Compact Design"],
+    pillars: [
+      {
+        name: "Beverage & Food Appliance",
+        role: "Primary Culinary Station",
+        description: "Brews rich coffee or cooks wholesome meals effortlessly at home.",
+        searchCategories: ["Kitchen"],
+        searchTerms: ["coffee", "air fryer", "frother", "kettle", "blender", "scale"],
+        weight: 0.6,
+      },
+      {
+        name: "Precision Measurement & Add-ons",
+        role: "Recipe Precision & Utility",
+        description: "Ensures accurate ratios and effortless morning prep.",
+        searchCategories: ["Kitchen", "Accessories"],
+        searchTerms: ["scale", "digital kitchen", "frother", "timer", "plug"],
+        weight: 0.4,
+      },
+    ],
+  },
+  {
+    keywords: [
+      "gaming", "game", "gamer", "games", "playstation", "xbox", "ps5", "controller",
+      "esports", "pc gaming", "console", "battlestation", "gaming setup"
+    ],
     title: "High-Performance Next-Gen Gaming Battle-station",
     priorities: ["High Refresh Rate", "Low Latency", "Immersive Audio", "RGB Ergonomics"],
     pillars: [
@@ -133,53 +202,10 @@ const GOAL_ARCHETYPES: GoalArchetype[] = [
     ],
   },
   {
-    keywords: ["coffee", "brew", "cappuccino", "espresso", "latte", "kitchen", "cooking", "breakfast"],
-    title: "Artisanal Home Cafe & Kitchen Cooking Setup",
-    priorities: ["Easy Cleaning", "Precision Brewing", "Speed", "Compact Design"],
-    pillars: [
-      {
-        name: "Beverage & Food Appliance",
-        role: "Primary Culinary Station",
-        description: "Brews rich coffee or cooks wholesome meals effortlessly at home.",
-        searchCategories: ["Kitchen"],
-        searchTerms: ["coffee", "air fryer", "frother", "kettle", "blender", "scale"],
-        weight: 0.6,
-      },
-      {
-        name: "Precision Measurement & Add-ons",
-        role: "Recipe Precision & Utility",
-        description: "Ensures accurate ratios and effortless morning prep.",
-        searchCategories: ["Kitchen", "Accessories"],
-        searchTerms: ["scale", "digital kitchen", "frother", "timer", "plug"],
-        weight: 0.4,
-      },
+    keywords: [
+      "video", "video editing", "editing", "youtube", "youtuber", "vlog", "vlogging",
+      "filmmaking", "creator", "content", "content creator", "podcast", "podcasting", "stream", "streaming", "filmmaker", "camera"
     ],
-  },
-  {
-    keywords: ["workout", "fitness", "gym", "exercise", "running", "health", "yoga", "training"],
-    title: "Home Fitness & Athletic Tracking Ecosystem",
-    priorities: ["Heart Rate Accuracy", "Sweat Resistance", "Motivating Audio", "Portability"],
-    pillars: [
-      {
-        name: "Biometric Fitness Tracker",
-        role: "Heart Rate & Metric Telemetry",
-        description: "Tracks active calories, workout heart-rate zones, and recovery sleep.",
-        searchCategories: ["Wearables"],
-        searchTerms: ["smartwatch", "watch", "band", "fitness", "galaxy watch", "garmin"],
-        weight: 0.55,
-      },
-      {
-        name: "Sweatproof Workout Audio",
-        role: "High-Energy Athletic Motivation",
-        description: "Secure-fit wireless earbuds that stay locked in during intense movement.",
-        searchCategories: ["Audio"],
-        searchTerms: ["earbuds", "earphones", "wireless", "bass", "neckband", "sports"],
-        weight: 0.45,
-      },
-    ],
-  },
-  {
-    keywords: ["video", "editing", "youtube", "vlog", "filmmaking", "creator", "content", "podcast", "stream"],
     title: "Pro Content Creator & Video Editing Studio",
     priorities: ["Color Accuracy", "Render Speed", "Crystal Clear Audio", "Fast Storage"],
     pillars: [
@@ -353,11 +379,29 @@ export const analyzeReverseShoppingGoal = async (
 
   // 3. Match Goal Archetype or dynamically synthesize pillars
   let matchedArchetype = GOAL_ARCHETYPES.find(arch =>
-    arch.keywords.some(kw => new RegExp(`\\b${kw}\\b`, "i").test(lowerGoal))
+    arch.keywords.some(kw => lowerGoal.includes(kw.toLowerCase()) || new RegExp(`\\b${kw}\\b`, "i").test(lowerGoal))
   );
 
   // If no predefined archetype, dynamically construct one based on query tokens & catalog categories
   if (!matchedArchetype) {
+    const stopWords = new Set(["i", "want", "to", "start", "create", "build", "need", "setup", "home", "good", "best", "things", "everything", "under", "for", "a", "an", "the", "and", "with", "or", "in", "of", "my", "me", "buy", "find"]);
+    const meaningfulTokens = lowerGoal.split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
+
+    if (meaningfulTokens.length === 0) {
+      return {
+        goal: rawGoal,
+        originalQuery: rawGoal,
+        language: lang,
+        extractedBudget: budget,
+        keyPriorities: [],
+        isUnsatisfiable: true,
+        unsatisfiableReason: `Our store catalog specializes in Electronics, Audio, Wearables, Smart Home, Cameras, and Kitchen Appliances. We could not find catalog items for "${rawGoal}". Try searching for study setups, fitness telemetry, audio, or cooking.`,
+        strategies: [],
+        activeStrategyIndex: 0,
+        overviewSummary: "Goal falls outside available catalog inventory.",
+      };
+    }
+
     matchedArchetype = {
       keywords: [lowerGoal],
       title: `Curated AI Solution: ${rawGoal}`,
@@ -368,15 +412,15 @@ export const analyzeReverseShoppingGoal = async (
           role: "Core Solution Foundation",
           description: "Essential centerpiece product to achieve your primary objective.",
           searchCategories: [],
-          searchTerms: lowerGoal.split(" ").filter(w => w.length > 3),
+          searchTerms: meaningfulTokens,
           weight: 0.65,
         },
         {
-          name: "Companion Utility & Accessories",
-          role: "Enhancement & Connectivity",
-          description: "Essential accessories to maximize efficiency and longevity.",
-          searchCategories: ["Accessories", "Audio"],
-          searchTerms: ["cable", "adapter", "case", "mouse", "plug"],
+          name: "Companion Utility & Audio",
+          role: "Enhancement & Audio Telemetry",
+          description: "Essential companion accessories to maximize efficiency and enjoyment.",
+          searchCategories: ["Audio", "Accessories", "SmartHome"],
+          searchTerms: ["earbuds", "earphones", "smart plug", "hub", "fast charger"],
           weight: 0.35,
         },
       ],
