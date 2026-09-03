@@ -1,7 +1,7 @@
-﻿# NexCommerce System Architecture
+# NexCommerce System Architecture
 
 ## Overview
-NexCommerce is an AI-native agentic commerce platform built for the **Razorpay Buildathon (Track 01: AI Growth & Agentic Commerce)**. It makes merchants AI-readable and transactable while proactively helping merchants uncover revenue growth opportunities.
+NexCommerce is an AI-native agentic commerce platform. It makes merchants AI-readable and transactable while proactively helping merchants uncover revenue growth opportunities.
 
 ```
                       CUSTOMER

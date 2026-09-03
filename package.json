@@ -1,7 +1,7 @@
 {
   "name": "ai-growth-and-agentic-commerce",
   "version": "1.0.0",
-  "description": "AI-Native Commerce Platform for Razorpay Buildathon - Track 01: AI Growth & Agentic Commerce",
+  "description": "Autonomous AI-Native Agentic Commerce & Merchant Revenue Platform",
   "private": true,
   "workspaces": [
     "backend",
@@ -27,6 +27,6 @@
     "a2a",
     "fintech"
   ],
-  "author": "Antigravity Engineer",
+  "author": "Adhvithi Komireddy",
   "license": "MIT"
 }
