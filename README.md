@@ -3,6 +3,7 @@
 # 🛒 NexCommerce
 ### Autonomous Multi-Agent Commerce & Merchant Revenue Growth Platform
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000.svg?logo=vercel&logoColor=white)](https://ai-growth-and-agentic-commerce-fron.vercel.app/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-green.svg?logo=nodedotjs)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB.svg?logo=react)](https://reactjs.org/)
@@ -19,7 +20,11 @@
   Built by <strong>Adhvithi Komireddy</strong>
 </p>
 
-[Key Features](#-key-features) • [System Architecture](#-system-architecture) • [Technology Stack](#-technology-stack) • [A2A Protocol](#-agent-to-agent-a2a-protocol) • [API Reference](#-complete-api-reference) • [Getting Started](#-getting-started) • [Deployment](#-production-deployment--high-availability)
+<p align="center">
+  🌐 <strong>Live Production URL:</strong> <a href="https://ai-growth-and-agentic-commerce-fron.vercel.app/" target="_blank">https://ai-growth-and-agentic-commerce-fron.vercel.app/</a>
+</p>
+
+[Live Demo](https://ai-growth-and-agentic-commerce-fron.vercel.app/) • [Key Features](#-key-features) • [System Architecture](#-system-architecture) • [Technology Stack](#-technology-stack) • [A2A Protocol](#-agent-to-agent-a2a-protocol) • [API Reference](#-complete-api-reference) • [Getting Started](#-getting-started) • [Deployment](#-production-deployment--high-availability)
 
 </div>
 

@@ -2,6 +2,7 @@
   "name": "ai-growth-and-agentic-commerce",
   "version": "1.0.0",
   "description": "Autonomous AI-Native Agentic Commerce & Merchant Revenue Platform",
+  "homepage": "https://ai-growth-and-agentic-commerce-fron.vercel.app/",
   "private": true,
   "workspaces": [
     "backend",
