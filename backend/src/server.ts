@@ -19,6 +19,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import receiptRoutes from "./routes/receiptRoutes.js";
 import merchantRevenueRoutes from "./routes/merchantRevenueRoutes.js";
+import reverseShoppingRoutes from "./routes/reverseShoppingRoutes.js";
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/receipts", receiptRoutes);
 app.use("/api/merchant", merchantRevenueRoutes);
+app.use("/api/reverse-shopping", reverseShoppingRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

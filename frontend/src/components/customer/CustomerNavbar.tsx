@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ShoppingBag, Sparkles, User as UserIcon, Shield, Globe, LogOut, Store, FileText, Settings, Sun, Moon } from "lucide-react";
+import { ShoppingBag, Sparkles, User as UserIcon, Shield, Globe, LogOut, Store, FileText, Settings, Sun, Moon, Target } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.js";
 import { useCart } from "../../context/CartContext.js";
 import { useLanguage, SupportedLanguage } from "../../context/LanguageContext.js";
@@ -32,10 +32,12 @@ export const CustomerNavbar: React.FC<CustomerNavbarProps> = ({
     { code: "te", label: "తెలుగు" },
   ];
 
+  const currentLangLabel = languages.find((l) => l.code === language)?.label || "English";
+
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-b border-[#E2E8F0] dark:border-slate-800 shadow-xs transition-colors duration-200">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-b border-[#E2E8F0] dark:border-slate-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-6">
             <button
@@ -66,6 +68,17 @@ export const CustomerNavbar: React.FC<CustomerNavbarProps> = ({
                 }`}
               >
                 {t("nav_shop")}
+              </button>
+              <button
+                onClick={() => setCurrentTab("reverse")}
+                className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  currentTab === "reverse"
+                    ? "bg-[#166534] text-white shadow-xs"
+                    : "text-[#166534] dark:text-[#4ADE80] bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60"
+                }`}
+              >
+                <Target className="w-3.5 h-3.5" />
+                <span>🎯 Goal Shopping</span>
               </button>
               <button
                 onClick={() => setCurrentTab("catalog")}

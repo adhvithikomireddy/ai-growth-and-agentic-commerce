@@ -1,4 +1,4 @@
-﻿export interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
@@ -186,4 +186,46 @@ export interface AuditLog {
   paymentResult?: string;
   status: string;
   reason?: string;
+}
+
+// Reverse Shopping Types
+export interface SolutionPillar {
+  id: string;
+  name: string;
+  description: string;
+  role: string;
+  product?: Product;
+  reason: string;
+  alternatives?: Product[];
+}
+
+export interface SolutionStrategy {
+  strategy: "budget" | "balanced" | "premium";
+  title: string;
+  description: string;
+  totalPrice: number;
+  budget?: number;
+  savings?: number;
+  isOverBudget: boolean;
+  overBudgetAmount: number;
+  pillars: SolutionPillar[];
+}
+
+export interface ReverseShoppingAnalysisResponse {
+  goal: string;
+  originalQuery: string;
+  language: "en" | "hi" | "te";
+  extractedBudget?: number;
+  userPersona?: string;
+  keyPriorities: string[];
+  followUpQuestion?: {
+    question: string;
+    options: string[];
+    parameter: "budget" | "priority" | "category_preference";
+  };
+  isUnsatisfiable: boolean;
+  unsatisfiableReason?: string;
+  strategies: SolutionStrategy[];
+  activeStrategyIndex: number;
+  overviewSummary: string;
 }

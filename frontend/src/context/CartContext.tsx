@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { Cart, CartItem } from "../types/index.js";
 import { api } from "../api/client.js";
 import { useAuth } from "./AuthContext.js";
@@ -8,6 +8,7 @@ interface CartContextType {
   itemCount: number;
   loading: boolean;
   addToCart: (productId: string, quantity?: number, discountPercent?: number) => Promise<void>;
+  addMultipleToCart: (items: Array<{ productId: string; quantity?: number; discountPercent?: number }>) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
   removeFromCart: (productId: string) => Promise<void>;
   applyDiscount: (productId: string, discountPercent: number, offerToken?: string) => Promise<void>;
@@ -19,6 +20,7 @@ const CartContext = createContext<CartContextType>({
   itemCount: 0,
   loading: false,
   addToCart: async () => {},
+  addMultipleToCart: async () => {},
   updateQuantity: async () => {},
   removeFromCart: async () => {},
   applyDiscount: async () => {},
@@ -59,6 +61,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await refreshCart();
   };
 
+  const addMultipleToCart = async (items: Array<{ productId: string; quantity?: number; discountPercent?: number }>) => {
+    for (const item of items) {
+      try {
+        await api.addToCart(item.productId, item.quantity || 1, item.discountPercent || 0);
+      } catch (err) {
+        console.warn("Failed adding item in bulk:", item.productId, err);
+      }
+    }
+    await refreshCart();
+  };
+
   const updateQuantity = async (productId: string, quantity: number) => {
     await api.updateCartItem(productId, quantity);
     await refreshCart();
@@ -83,6 +96,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         itemCount,
         loading,
         addToCart,
+        addMultipleToCart,
         updateQuantity,
         removeFromCart,
         applyDiscount,

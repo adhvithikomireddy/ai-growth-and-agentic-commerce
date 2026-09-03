@@ -4,6 +4,7 @@ import { LanguageProvider, useLanguage } from "./context/LanguageContext.js";
 import { CartProvider } from "./context/CartContext.js";
 import { CustomerNavbar } from "./components/customer/CustomerNavbar.js";
 import { AIShoppingView } from "./pages/customer/AIShoppingView.js";
+import { ReverseShoppingView } from "./pages/customer/ReverseShoppingView.js";
 import { CatalogView } from "./pages/customer/CatalogView.js";
 import { CartView } from "./pages/customer/CartView.js";
 import { OrdersView } from "./pages/customer/OrdersView.js";
@@ -59,7 +60,13 @@ const MainContent: React.FC = () => {
 
       {/* Main View Body */}
       <main className="flex-1">
-        {currentTab === "shop" && <AIShoppingView />}
+        {currentTab === "shop" && <AIShoppingView onNavigateReverse={() => setCurrentTab("reverse")} />}
+        {currentTab === "reverse" && (
+          <ReverseShoppingView
+            onExploreCatalog={() => setCurrentTab("catalog")}
+            onOpenAuth={() => setAuthModalOpen(true)}
+          />
+        )}
         {currentTab === "catalog" && (
           <CatalogView
             onViewDetails={(p) => setDetailProduct(p)}

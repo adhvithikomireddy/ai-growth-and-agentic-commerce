@@ -17,6 +17,7 @@ import {
   Camera,
   Utensils,
   Zap,
+  Target,
 } from "lucide-react";
 import { Product, A2AActivityEvent } from "../../types/index.js";
 import { api } from "../../api/client.js";
@@ -31,7 +32,11 @@ import { Card } from "../../components/ui/Card.js";
 import { Button } from "../../components/ui/Button.js";
 import { AIUpsellShowcase } from "../../components/customer/AIUpsellShowcase.js";
 
-export const AIShoppingView: React.FC = () => {
+interface AIShoppingViewProps {
+  onNavigateReverse?: () => void;
+}
+
+export const AIShoppingView: React.FC<AIShoppingViewProps> = ({ onNavigateReverse }) => {
   const { language, t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [agentResponse, setAgentResponse] = useState<any>(null);
@@ -161,6 +166,34 @@ export const AIShoppingView: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Reverse Shopping Feature Hero Callout */}
+      {onNavigateReverse && (
+        <div className="max-w-4xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-900 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+          <div className="space-y-1 relative z-10">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-emerald-100 text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs">
+              <Target className="w-3 h-3" />
+              <span>New Feature: Reverse Shopping</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold">
+              Don't know what you need? Start with a goal.
+            </h3>
+            <p className="text-xs text-emerald-100 max-w-xl leading-relaxed">
+              Describe what you want to achieve (e.g. <em>"Create a comfortable study setup for under ₹15,000"</em>) and our AI will architect the complete solution for you.
+            </p>
+          </div>
+
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={onNavigateReverse}
+            icon={<ArrowRight className="w-4 h-4" />}
+            className="shrink-0 bg-white text-emerald-900 hover:bg-emerald-50 border-0 font-bold shadow-md relative z-10 w-full sm:w-auto"
+          >
+            Start with Goal
+          </Button>
+        </div>
+      )}
 
       {/* Track 01 Architecture Bar: The Bar */}
       <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-white border border-[#BBF7D0] shadow-xs">

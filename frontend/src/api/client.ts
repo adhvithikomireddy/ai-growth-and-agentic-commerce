@@ -258,4 +258,32 @@ export const api = {
     });
     return handleResponse(res);
   },
+
+  // Reverse Shopping (Goal-First Commerce)
+  analyzeReverseGoal: async (goal: string, language: string = "en", budget?: number, exclusions: string[] = []) => {
+    const res = await fetch(`${API_BASE}/api/reverse-shopping/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal, language, budget, exclusions }),
+    });
+    return handleResponse(res);
+  },
+
+  refineReverseGoal: async (currentSolution: any, instruction: string) => {
+    const res = await fetch(`${API_BASE}/api/reverse-shopping/refine`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentSolution, instruction }),
+    });
+    return handleResponse(res);
+  },
+
+  getReverseAlternatives: async (category: string, currentProductId?: string, maxPrice?: number) => {
+    const res = await fetch(`${API_BASE}/api/reverse-shopping/alternatives`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category, currentProductId, maxPrice }),
+    });
+    return handleResponse(res);
+  },
 };
