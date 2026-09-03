@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import {
   Shield,
   Lock,
@@ -15,9 +15,13 @@ import {
   Check,
   Building2,
   Key,
+  Sun,
+  Moon,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.js";
 import { useLanguage } from "../../context/LanguageContext.js";
+import { useTheme } from "../../context/ThemeContext.js";
 import { Card } from "../../components/ui/Card.js";
 import { Button } from "../../components/ui/Button.js";
 import { Input } from "../../components/ui/Input.js";
@@ -26,6 +30,7 @@ import { BiometricFaceScannerModal } from "../../components/common/BiometricFace
 export const SettingsView: React.FC = () => {
   const { user, updateSpendingLimits } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme, setTheme, isDark } = useTheme();
 
   // Biometric state
   const [biometricEnabled, setBiometricEnabled] = useState(true);
@@ -95,176 +100,213 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 transition-colors duration-200">
       {/* Header */}
-      <div className="border-b border-[#E2E8F0] pb-5 space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172018] tracking-tight">
+      <div className="border-b border-[#E2E8F0] dark:border-slate-800 pb-5 space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172018] dark:text-white tracking-tight">
           Account & Privacy Settings
         </h1>
-        <p className="text-xs sm:text-sm text-[#667067]">
-          Manage your biometric security, banking privacy controls, autonomous agent guardrails, and compliance preferences.
+        <p className="text-xs sm:text-sm text-[#667067] dark:text-slate-400">
+          Manage your biometric security, banking privacy controls, autonomous agent guardrails, and theme appearance.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Navigation Sidebar Quick Links */}
-        <div className="space-y-2">
-          <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#667067] block">
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs space-y-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#667067] dark:text-slate-400 block">
               Security Overview
             </span>
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50 text-emerald-800 font-medium">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-medium">
                 <span className="flex items-center gap-2">
-                  <ScanFace className="w-4 h-4 text-emerald-600" /> Biometrics
+                  <ScanFace className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Biometrics
                 </span>
-                <span className="text-[10px] bg-emerald-200/80 px-2 py-0.5 rounded font-bold">Active</span>
+                <span className="text-[10px] bg-emerald-200/80 dark:bg-emerald-900/60 px-2 py-0.5 rounded font-bold">Active</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 text-neutral-700">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-slate-800/60 text-neutral-700 dark:text-slate-300">
                 <span className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-neutral-500" /> Bank Privacy
+                  <CreditCard className="w-4 h-4 text-neutral-500 dark:text-slate-400" /> Bank Privacy
                 </span>
-                <span className="text-[10px] bg-neutral-200 px-2 py-0.5 rounded font-bold">RBI Tokenized</span>
+                <span className="text-[10px] bg-neutral-200 dark:bg-slate-700 px-2 py-0.5 rounded font-bold">RBI Tokenized</span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 text-neutral-700">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-slate-800/60 text-neutral-700 dark:text-slate-300">
                 <span className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-neutral-500" /> Agent Limits
+                  <Shield className="w-4 h-4 text-neutral-500 dark:text-slate-400" /> Agent Limits
                 </span>
-                <span className="text-[10px] bg-neutral-200 px-2 py-0.5 rounded font-bold">₹{autonomousLimit}</span>
+                <span className="text-[10px] bg-neutral-200 dark:bg-slate-700 px-2 py-0.5 rounded font-bold">₹{autonomousLimit}</span>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-white border border-emerald-200 text-xs space-y-2 text-emerald-950">
-            <span className="font-bold flex items-center gap-1.5 text-emerald-800">
-              <Building2 className="w-4 h-4 text-emerald-600" /> NPCI & RBI Compliance
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 via-teal-50 to-white dark:from-emerald-950/40 dark:via-slate-900 dark:to-slate-900 border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-2 text-emerald-950 dark:text-emerald-200">
+            <span className="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+              <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> NPCI & RBI Compliance
             </span>
-            <p className="text-[11px] leading-relaxed text-emerald-800/90">
-              This platform adheres to the Digital Personal Data Protection (DPDP) Act 2023. Raw banking credentials and biometric scans never leave your encrypted local enclave.
+            <p className="text-[11px] text-[#475548] dark:text-slate-300 leading-relaxed">
+              Your autonomous agent operates strictly under zero-card-retention policies and client-side device biometric tokenization.
             </p>
           </div>
         </div>
 
-        {/* Main Settings Panel */}
+        {/* Main Settings Sections */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Section 1: Biometric Face Recognition Security */}
-          <Card className="p-6 space-y-5 bg-white border border-[#E2E8F0] shadow-xs">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                  <ScanFace className="w-5 h-5" />
+          {/* Section 0: Appearance & Theme Preferences */}
+          <Card className="p-6 space-y-4 bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-[#E2E8F0] dark:border-slate-800 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 flex items-center justify-center">
+                <Palette className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#172018] dark:text-white">Appearance & Theme</h3>
+                <p className="text-xs text-[#667067] dark:text-slate-400">Choose between clean Light Mode or high-contrast Dark Mode</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-center transition-all ${
+                  theme === "light"
+                    ? "border-[#166534] bg-emerald-50/50 ring-2 ring-[#166534]/20"
+                    : "border-[#E2E8F0] dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800/50"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                  <Sun className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#172018]">Biometric Face Authentication</h3>
-                  <p className="text-xs text-[#667067]">Webcam optical liveness scanning & cryptographic signatures</p>
+                  <span className="text-xs font-bold text-[#172018] dark:text-white block">Light Mode</span>
+                  <span className="text-[10px] text-[#667067] dark:text-slate-400">Clean Emerald Crisp</span>
                 </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`p-4 rounded-xl border flex flex-col items-center gap-2 text-center transition-all ${
+                  theme === "dark"
+                    ? "border-[#22C55E] bg-slate-900 ring-2 ring-[#22C55E]/30"
+                    : "border-[#E2E8F0] dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-800/50"
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center">
+                  <Moon className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-[#172018] dark:text-white block">Dark Mode</span>
+                  <span className="text-[10px] text-[#667067] dark:text-slate-400">Deep Slate & Glow</span>
+                </div>
+              </button>
+            </div>
+          </Card>
+
+          {/* Section 1: Biometric & Liveness Verification */}
+          <Card className="p-6 space-y-5 bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-[#E2E8F0] dark:border-slate-800 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-400 flex items-center justify-center">
+                <ScanFace className="w-5 h-5" />
               </div>
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                {biometricStatus}
-              </span>
+              <div>
+                <h3 className="text-base font-bold text-[#172018] dark:text-white">Biometric Face ID & Liveness</h3>
+                <p className="text-xs text-[#667067] dark:text-slate-400">Zero-knowledge facial verification for high-value autonomous purchases</p>
+              </div>
             </div>
 
             <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between py-2 border-b border-neutral-100">
-                <div>
-                  <span className="font-semibold text-[#172018] block">Biometric Pay Authorization</span>
-                  <span className="text-[#667067] text-[11px]">Require face verification before initiating transactions above autonomous threshold</span>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-slate-800/60 border border-[#E2E8F0] dark:border-slate-700">
+                <div className="space-y-0.5">
+                  <span className="font-semibold text-[#172018] dark:text-white block">Biometric Enrollment Status</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-medium">{biometricStatus}</span>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={biometricEnabled}
-                  onChange={(e) => setBiometricEnabled(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
-                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFaceModal(true)}
+                  icon={<ScanFace className="w-3.5 h-3.5" />}
+                >
+                  Test Scanner
+                </Button>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-b border-neutral-100">
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-slate-800">
                 <div>
-                  <span className="font-semibold text-[#172018] block">3D Liveness & Anti-Spoofing Detection</span>
-                  <span className="text-[#667067] text-[11px]">Verify real-time facial micro-motions to prevent photograph or screen spoofing</span>
+                  <span className="font-semibold text-[#172018] dark:text-white block">Live Optical Blinking & Depth Check</span>
+                  <span className="text-[#667067] dark:text-slate-400 text-[11px]">Detects real human presence to prevent photo or video spoofing</span>
                 </div>
                 <input
                   type="checkbox"
                   checked={livenessCheck}
                   onChange={(e) => setLivenessCheck(e.target.checked)}
-                  className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer"
+                  className="w-4 h-4 accent-[#166534] rounded cursor-pointer"
                 />
-              </div>
-
-              <div className="p-3 rounded-xl bg-neutral-50 border border-[#E2E8F0] flex items-center justify-between">
-                <div>
-                  <span className="font-medium text-[#172018] block text-[11px]">Biometric Token Hash Vault</span>
-                  <span className="text-[#667067] font-mono text-[10px]">#SHA256-AES-GCM-ENCLAVE-9482</span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setShowFaceModal(true)}
-                  icon={<ScanFace className="w-3.5 h-3.5" />}
-                >
-                  Test Face Scan
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          {/* Section 2: Banking & Payment Privacy Settings */}
-          <Card className="p-6 space-y-5 bg-white border border-[#E2E8F0] shadow-xs">
-            <div className="flex items-center gap-3 border-b border-[#E2E8F0] pb-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-[#172018]">Banking & Payment Privacy</h3>
-                <p className="text-xs text-[#667067]">Card tokenization, VPA masking, and zero-retention policies</p>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between py-2 border-b border-neutral-100">
-                <div>
-                  <span className="font-semibold text-[#172018] block">Zero Card Retention Compliance</span>
-                  <span className="text-[#667067] text-[11px]">Neither NexCommerce nor Merchant Agents store raw CVV or credit card PANs</span>
-                </div>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  Enforced (RBI Circular)
-                </span>
-              </div>
-
-              {/* Masked Payment Methods Preview */}
-              <div className="p-3.5 rounded-xl bg-neutral-50 border border-[#E2E8F0] space-y-2">
-                <span className="text-[10px] uppercase font-bold text-[#667067] tracking-wider block">
-                  Masked Vaulted Methods (Razorpay Test Mode)
-                </span>
-                <div className="flex items-center justify-between py-1 text-xs">
-                  <span className="font-mono text-[#172018]">Card: **** **** **** 0002 (Visa)</span>
-                  <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded">Tokenized</span>
-                </div>
-                <div className="flex items-center justify-between py-1 text-xs border-t border-neutral-200/60 pt-1.5">
-                  <span className="font-mono text-[#172018]">UPI VPA: customer@okhdfcbank</span>
-                  <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded">Masked</span>
-                </div>
               </div>
 
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <span className="font-semibold text-[#172018] block">Instant Automated Refunds</span>
-                  <span className="text-[#667067] text-[11px]">Cancelled transactions or failed deliveries auto-reverse to source bank account</span>
+                  <span className="font-semibold text-[#172018] dark:text-white block">Require Biometric Above Spending Limit</span>
+                  <span className="text-[#667067] dark:text-slate-400 text-[11px]">Triggers 3D facial scan when order exceeds autonomous threshold</span>
                 </div>
-                <span className="text-xs font-semibold text-[#166534]">Automated (T+0)</span>
+                <input
+                  type="checkbox"
+                  checked={biometricEnabled}
+                  onChange={(e) => setBiometricEnabled(e.target.checked)}
+                  className="w-4 h-4 accent-[#166534] rounded cursor-pointer"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Section 2: Bank & Payment Privacy */}
+          <Card className="p-6 space-y-5 bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-[#E2E8F0] dark:border-slate-800 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-800 dark:text-blue-400 flex items-center justify-center">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#172018] dark:text-white">Bank Privacy & Zero-Retention Vault</h3>
+                <p className="text-xs text-[#667067] dark:text-slate-400">Strict isolation of financial identifiers according to DPDP Act 2023</p>
+              </div>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-slate-800">
+                <div>
+                  <span className="font-semibold text-[#172018] dark:text-white block">Zero Raw Card / Account Retention</span>
+                  <span className="text-[#667067] dark:text-slate-400 text-[11px]">Card details never touch backend servers; tokenized via Razorpay</span>
+                </div>
+                <span className="text-xs font-semibold text-[#166534] dark:text-emerald-400">Enforced (Always On)</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-slate-800">
+                <div>
+                  <span className="font-semibold text-[#172018] dark:text-white block">UPI VPA Identity Masking</span>
+                  <span className="text-[#667067] dark:text-slate-400 text-[11px]">Merchant receives only pseudo-identifiers (`****@okhdfcbank`)</span>
+                </div>
+                <span className="text-xs font-semibold text-[#166534] dark:text-emerald-400">Masked</span>
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <span className="font-semibold text-[#172018] dark:text-white block">Instant Automated Refunds</span>
+                  <span className="text-[#667067] dark:text-slate-400 text-[11px]">Cancelled transactions or failed deliveries auto-reverse to source bank account</span>
+                </div>
+                <span className="text-xs font-semibold text-[#166534] dark:text-emerald-400">Automated (T+0)</span>
               </div>
             </div>
           </Card>
 
           {/* Section 3: Autonomous Spending Limits & Policy Engine */}
-          <Card className="p-6 space-y-5 bg-white border border-[#E2E8F0] shadow-xs">
-            <div className="flex items-center gap-3 border-b border-[#E2E8F0] pb-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <Card className="p-6 space-y-5 bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-[#E2E8F0] dark:border-slate-800 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 flex items-center justify-center">
                 <Sliders className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#172018]">Agentic Spending Limits</h3>
-                <p className="text-xs text-[#667067]">Control autonomous purchasing thresholds and security PIN</p>
+                <h3 className="text-base font-bold text-[#172018] dark:text-white">Agentic Spending Limits</h3>
+                <p className="text-xs text-[#667067] dark:text-slate-400">Control autonomous purchasing thresholds and security PIN</p>
               </div>
             </div>
 
@@ -301,8 +343,8 @@ export const SettingsView: React.FC = () => {
 
               <div className="flex items-center justify-between pt-2">
                 {savedSuccess && (
-                  <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     Guardrails successfully saved!
                   </span>
                 )}
@@ -314,21 +356,21 @@ export const SettingsView: React.FC = () => {
           </Card>
 
           {/* Section 4: Data Privacy & Audit Ledger */}
-          <Card className="p-6 space-y-4 bg-white border border-[#E2E8F0] shadow-xs">
-            <div className="flex items-center gap-3 border-b border-[#E2E8F0] pb-4">
-              <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
+          <Card className="p-6 space-y-4 bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-3 border-b border-[#E2E8F0] dark:border-slate-800 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950/50 text-teal-700 dark:text-teal-400 flex items-center justify-center">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#172018]">Data Privacy & Audit Export</h3>
-                <p className="text-xs text-[#667067]">Export your cryptographically signed transaction history</p>
+                <h3 className="text-base font-bold text-[#172018] dark:text-white">Data Privacy & Audit Export</h3>
+                <p className="text-xs text-[#667067] dark:text-slate-400">Export your cryptographically signed transaction history</p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <div>
-                <span className="font-semibold text-[#172018] block">Download Cryptographic Audit Trail</span>
-                <span className="text-[#667067] text-[11px]">Includes all A2A packets, timestamps, negotiated margins, and payment signatures.</span>
+                <span className="font-semibold text-[#172018] dark:text-white block">Download Cryptographic Audit Trail</span>
+                <span className="text-[#667067] dark:text-slate-400 text-[11px]">Includes all A2A packets, timestamps, negotiated margins, and payment signatures.</span>
               </div>
               <Button
                 variant="outline"

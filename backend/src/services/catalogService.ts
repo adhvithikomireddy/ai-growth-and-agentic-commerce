@@ -120,9 +120,9 @@ export const searchCatalog = async (params: CatalogSearchParams) => {
       if (pDesc.includes(term)) score += 10;
     }
 
-    // Price within budget bonus
+    // Price within budget bonus (lower prices get stronger score boost for affordable queries)
     if (maxPrice && p.price <= maxPrice) {
-      score += 25;
+      score += 60 + Math.max(0, Math.round((maxPrice - p.price) / (maxPrice / 40)));
     }
 
     // Rating & sales as tie breakers

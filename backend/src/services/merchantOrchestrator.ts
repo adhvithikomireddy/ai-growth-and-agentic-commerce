@@ -4,6 +4,7 @@ import { RevenueOpportunity, IRevenueOpportunity } from "../models/RevenueOpport
 import { Campaign } from "../models/Campaign.js";
 import { AuditLog } from "../models/AuditLog.js";
 import { broadcastA2AEvent } from "../a2a/a2aProtocol.js";
+import { generateDynamicCampaignSuggestions } from "./campaignSuggestionService.js";
 
 export const getMerchantAnalytics = async (merchantId: string = "merch_apex_001") => {
   const [orders, products, activeCampaigns] = await Promise.all([
@@ -54,8 +55,27 @@ export const getMerchantAnalytics = async (merchantId: string = "merch_apex_001"
   };
 };
 
-export const getRevenueOpportunities = async (merchantId: string = "merch_apex_001") => {
-  return await RevenueOpportunity.find({ merchantId }).sort({ createdAt: -1 });
+export const getRevenueOpportunities = async (merchantId: string = "merch_apex_001"): Promise<any[]> => {
+  let opportunities: any[] = await RevenueOpportunity.find({ merchantId }).sort({ createdAt: -1 });
+  if (opportunities.length === 0) {
+    opportunities = await generateDynamicCampaignSuggestions(merchantId);
+  }
+  return opportunities;
+};
+
+export const refreshMerchantIntelligence = async (merchantId: string = "merch_apex_001") => {
+  const [newOpportunities, analytics, campaigns, auditLogs] = await Promise.all([
+    generateDynamicCampaignSuggestions(merchantId),
+    getMerchantAnalytics(merchantId),
+    getCampaigns(merchantId),
+    AuditLog.find().sort({ timestamp: -1 }).limit(50),
+  ]);
+  return {
+    analytics,
+    opportunities: newOpportunities,
+    campaigns,
+    auditLogs,
+  };
 };
 
 export const approveOpportunity = async (opportunityId: string, merchantId: string = "merch_apex_001") => {

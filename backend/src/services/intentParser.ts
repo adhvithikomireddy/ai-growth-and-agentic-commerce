@@ -23,33 +23,62 @@ export const extractBudget = (text: string): { budgetMax?: number; budgetMin?: n
   let budgetMin: number | undefined;
 
   const cleaned = text.replace(/,/g, "");
+  const lower = text.toLowerCase();
 
-  const regexList = [
-    /(?:under|below|within|max|budget|less\s+than|upto|up\s+to)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i,
-    /(\d+)\s*(?:లోపు|కింద|తక్కువ|వరకు)/,
-    /(?:के\s*अंदर|से\s*कम|तक)\s*(\d+)/,
-    /(\d+)\s*(?:के\s*अंदर|से\s*कम|तक)/,
-    /(?:rs\.?|inr|₹)\s*(\d+)/i,
-  ];
+  // Check 1k, 2k, 5k shorthand e.g. "under 1k", "below 2k", "1k budget"
+  const kMatch = cleaned.match(/(?:under|below|within|max|budget|less\s+than|upto|up\s+to)?\s*(\d+)\s*k\b/i);
+  if (kMatch && kMatch[1]) {
+    budgetMax = parseInt(kMatch[1], 10) * 1000;
+  }
 
-  for (const rx of regexList) {
-    const m = cleaned.match(rx);
-    if (m && m[1]) {
-      const val = parseInt(m[1], 10);
-      if (val >= 300 && val <= 500000) {
-        budgetMax = val;
-        break;
+  if (!budgetMax) {
+    const regexList = [
+      /(?:under|below|within|max|budget|less\s+than|upto|up\s+to)\s*(?:rs\.?|inr|₹)?\s*(\d+)/i,
+      /(\d+)\s*(?:లోపు|కింద|తక్కువ|వరకు)/,
+      /(?:के\s*अंदर|से\s*कम|तक)\s*(\d+)/,
+      /(\d+)\s*(?:के\s*अंदर|से\s*कम|तक)/,
+      /(?:rs\.?|inr|₹)\s*(\d+)/i,
+    ];
+
+    for (const rx of regexList) {
+      const m = cleaned.match(rx);
+      if (m && m[1]) {
+        const val = parseInt(m[1], 10);
+        if (val >= 100 && val <= 500000) {
+          budgetMax = val;
+          break;
+        }
       }
     }
   }
 
   if (!budgetMax) {
-    const numMatch = cleaned.match(/\b(\d{4,6})\b/);
+    const numMatch = cleaned.match(/\b(\d{3,6})\b/);
     if (numMatch && numMatch[1]) {
       const val = parseInt(numMatch[1], 10);
-      if (val >= 1000 && val <= 300000) {
+      if (val >= 100 && val <= 300000) {
         budgetMax = val;
       }
+    }
+  }
+
+  // If no explicit number, but user expresses "affordable" / "cheap" / "budget"
+  if (!budgetMax) {
+    if (
+      lower.includes("affordable") ||
+      lower.includes("cheap") ||
+      lower.includes("pocket friendly") ||
+      lower.includes("budget friendly") ||
+      lower.includes("low cost") ||
+      lower.includes("low price") ||
+      lower.includes("inexpensive") ||
+      lower.includes("తక్కువ ధర") ||
+      lower.includes("సస్తా") ||
+      lower.includes("सस्ता") ||
+      lower.includes("कम दाम") ||
+      lower.includes("कम कीमत")
+    ) {
+      budgetMax = 1000;
     }
   }
 

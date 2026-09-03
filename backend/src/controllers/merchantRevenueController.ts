@@ -5,9 +5,32 @@ import {
   approveOpportunity,
   dismissOpportunity,
   getCampaigns,
+  refreshMerchantIntelligence,
 } from "../services/merchantOrchestrator.js";
 import { AuditLog } from "../models/AuditLog.js";
 import { AuthenticatedRequest } from "../middleware/authMiddleware.js";
+
+export const handleRefreshIntelligence = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const merchantId = req.user?.merchantId || "merch_apex_001";
+    const result = await refreshMerchantIntelligence(merchantId);
+
+    res.json({
+      success: true,
+      data: {
+        message: "Store Intelligence Engine successfully refreshed and new campaign suggestions generated!",
+        ...result,
+      },
+      error: null,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      data: null,
+      error: { code: "REFRESH_INTELLIGENCE_FAILED", message: error.message },
+    });
+  }
+};
 
 export const getAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {

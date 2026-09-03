@@ -1,4 +1,4 @@
-﻿const API_BASE = import.meta.env.VITE_API_URL || "";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 const getAuthHeaders = (): Record<string, string> => {
   const token = localStorage.getItem("token");
@@ -246,6 +246,14 @@ export const api = {
 
   getMerchantAuditLogs: async () => {
     const res = await fetch(`${API_BASE}/api/merchant/audit-logs`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  refreshMerchantIntelligence: async () => {
+    const res = await fetch(`${API_BASE}/api/merchant/refresh-intelligence`, {
+      method: "POST",
       headers: getAuthHeaders(),
     });
     return handleResponse(res);

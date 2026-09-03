@@ -16,6 +16,7 @@ import { NegotiationModal } from "./components/customer/NegotiationModal.js";
 import { ProductComparisonModal } from "./components/customer/ProductComparisonModal.js";
 import { SettingsView } from "./pages/customer/SettingsView.js";
 import { ShieldCheck, Cpu } from "lucide-react";
+import { ThemeProvider } from "./context/ThemeContext.js";
 
 const MainContent: React.FC = () => {
   const { user } = useAuth();
@@ -45,7 +46,7 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8F4] text-[#172018]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAF9] dark:bg-[#090D11] text-[#172018] dark:text-[#F1F5F9] transition-colors duration-200">
       {/* Navigation Header */}
       {currentTab !== "merchant" ? (
         <CustomerNavbar
@@ -81,21 +82,21 @@ const MainContent: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-[#E2E8F0] py-6 px-4 text-center text-xs text-[#667067]">
+      <footer className="bg-white dark:bg-[#0F172A] border-t border-[#E2E8F0] dark:border-slate-800 py-6 px-4 text-center text-xs text-[#667067] dark:text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-[#166534] text-white flex items-center justify-center font-bold text-[10px]">
+            <div className="w-5 h-5 rounded-md bg-[#166534] dark:bg-[#22C55E] text-white flex items-center justify-center font-bold text-[10px]">
               N
             </div>
-            <span className="font-semibold text-[#172018]">NexCommerce</span>
+            <span className="font-semibold text-[#172018] dark:text-white">NexCommerce</span>
             <span>• Autonomous Multi-Agent Commerce Platform</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <span className="flex items-center gap-1 text-[#166534]">
+            <span className="flex items-center gap-1 text-[#166534] dark:text-[#4ADE80]">
               <ShieldCheck className="w-3.5 h-3.5" /> Razorpay Test Mode
             </span>
-            <span className="flex items-center gap-1 text-[#166534]">
+            <span className="flex items-center gap-1 text-[#166534] dark:text-[#4ADE80]">
               <Cpu className="w-3.5 h-3.5" /> A2A Protocol Active
             </span>
             <span>MongoDB Atlas Persistent</span>
@@ -136,15 +137,21 @@ const MainContent: React.FC = () => {
   );
 };
 
+import { ErrorBoundary } from "./components/common/ErrorBoundary.js";
+
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <CartProvider>
-          <MainContent />
-        </CartProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <CartProvider>
+              <MainContent />
+            </CartProvider>
+          </LanguageProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

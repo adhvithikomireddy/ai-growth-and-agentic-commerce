@@ -105,6 +105,14 @@ const startServer = async () => {
     });
   };
 
+  process.on("unhandledRejection", (reason, promise) => {
+    logger.error("Unhandled Promise Rejection detected:", { reason, promise });
+  });
+
+  process.on("uncaughtException", (err) => {
+    logger.error("Uncaught Exception caught:", err);
+  });
+
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);
 };
