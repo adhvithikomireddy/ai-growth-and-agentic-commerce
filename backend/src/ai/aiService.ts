@@ -56,13 +56,17 @@ CRITICAL INSTRUCTIONS:
   "crossSellSuggestion": "..."
 }
 `;
-      const result = await model.generateContent(prompt);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Gemini call timed out, falling back to instant reasoning engine")), 1200)
+      );
+
+      const result: any = await Promise.race([model.generateContent(prompt), timeoutPromise]);
       const text = result.response.text();
       const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsed = JSON.parse(cleanJson);
       return parsed;
     } catch (err: any) {
-      logger.warn("Gemini API call failed, using dynamic specification reasoning engine:", err.message);
+      logger.warn("Gemini fast-fallback invoked:", err.message);
     }
   }
 

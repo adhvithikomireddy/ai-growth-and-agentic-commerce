@@ -211,7 +211,11 @@ const GOAL_ARCHETYPES: GoalArchetype[] = [
   },
 ];
 
-// Helper: Match best products from MongoDB for a pillar
+// Fast in-memory cache for ultra-low latency (<1ms)
+const reverseShoppingCache = new Map<string, { data: ReverseShoppingAnalysisResponse; expiresAt: number }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// Helper: Match best products from MongoDB for a pillar with high-performance lean projections
 const matchProductsForPillar = async (
   pillar: GoalArchetype["pillars"][0],
   budgetAlloc: number,
@@ -226,29 +230,44 @@ const matchProductsForPillar = async (
     queryFilter.category = { $in: pillar.searchCategories };
   }
 
+  const selectFields = "productId merchantId sku name category subcategory price currency stock availability rating reviewCount specifications tags discountPercent imageUrl";
+
   // Attempt term-specific matching first (e.g. "mouse pad", "earbuds", "frother")
   let candidates: IProduct[] = [];
   if (pillar.searchTerms && pillar.searchTerms.length > 0) {
     const termRegexes = pillar.searchTerms.map(t => new RegExp(t, "i"));
-    candidates = await Product.find({
+    candidates = (await Product.find({
       ...queryFilter,
       $or: [
         { name: { $in: termRegexes } },
         { tags: { $in: pillar.searchTerms } },
         { subcategory: { $in: termRegexes } },
       ],
-    }).sort({ rating: -1, salesCount: -1 }).limit(30);
+    })
+      .select(selectFields)
+      .lean()
+      .sort({ rating: -1, salesCount: -1 })
+      .limit(20)) as any;
   }
 
   if (candidates.length === 0) {
-    candidates = await Product.find(queryFilter).sort({ salesCount: -1, rating: -1 }).limit(30);
+    candidates = (await Product.find(queryFilter)
+      .select(selectFields)
+      .lean()
+      .sort({ rating: -1, salesCount: -1 })
+      .limit(20)) as any;
   }
 
   if (candidates.length === 0) {
-    const fallbackCandidates = await Product.find({
+    const fallbackCandidates = (await Product.find({
       productId: { $nin: exclusions },
       stock: { $gt: 0 },
-    }).sort({ rating: -1 }).limit(20);
+    })
+      .select(selectFields)
+      .lean()
+      .sort({ rating: -1 })
+      .limit(15)) as any;
+
     return {
       allCandidates: fallbackCandidates,
       budgetProduct: fallbackCandidates[fallbackCandidates.length - 1],
@@ -290,6 +309,13 @@ export const analyzeReverseShoppingGoal = async (
   const budgetInfo = extractBudget(rawGoal);
   const budget = providedBudget || budgetInfo.budgetMax;
   const lowerGoal = rawGoal.toLowerCase().trim();
+
+  // Check high-speed in-memory cache
+  const cacheKey = `${lowerGoal}_${lang}_${budget || "any"}_${exclusions.join(",")}`;
+  const cached = reverseShoppingCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
 
   // 1. Guard against empty / nonsensical input
   if (lowerGoal.length < 3) {
@@ -367,39 +393,39 @@ export const analyzeReverseShoppingGoal = async (
     };
   }
 
-  // 5. Build the 3 Strategies (Budget, Balanced, Premium)
+  // 5. Build the 3 Strategies (Budget, Balanced, Premium) concurrently in parallel
+  const matchResults = await Promise.all(
+    matchedArchetype.pillars.map((pillar) => {
+      const pillarBudgetAlloc = budget ? budget * pillar.weight : 10000;
+      return matchProductsForPillar(pillar, pillarBudgetAlloc, exclusions);
+    })
+  );
+
   const budgetPillars: SolutionPillar[] = [];
   const balancedPillars: SolutionPillar[] = [];
   const premiumPillars: SolutionPillar[] = [];
 
-  const usedProductIds = new Set<string>(exclusions);
+  const getRationale = (p?: IProduct, pillarRole?: string, tier: "budget" | "balanced" | "premium" = "balanced") => {
+    if (!p) return `Selected to fulfill ${pillarRole}.`;
+    if (tier === "budget") {
+      return `Delivers essential ${(pillarRole || "").toLowerCase()} at an ultra-accessible ₹${p.price.toLocaleString("en-IN")} price point while meeting core requirements.`;
+    }
+    if (tier === "premium") {
+      return `High-end flagship choice featuring top-tier build quality, premium specs, and maximum durability for your ${matchedArchetype?.title.toLowerCase()}.`;
+    }
+    return `Recommended sweet-spot for your goal: provides strong performance, verified high ratings (${p.rating}★), and excellent price-to-value ratio.`;
+  };
 
-  for (const pillar of matchedArchetype.pillars) {
-    const pillarBudgetAlloc = budget ? budget * pillar.weight : 10000;
-    const matched = await matchProductsForPillar(pillar, pillarBudgetAlloc, Array.from(usedProductIds));
-
-    // Rationale generator connecting Goal -> Requirement -> Spec
-    const getRationale = (p?: IProduct, tier: "budget" | "balanced" | "premium" = "balanced") => {
-      if (!p) return `Selected to fulfill ${pillar.role}.`;
-      const brand = (p as any).specifications?.Brand || p.category;
-      if (tier === "budget") {
-        return `Delivers essential ${pillar.role.toLowerCase()} at an ultra-accessible ₹${p.price.toLocaleString("en-IN")} price point while meeting core requirements.`;
-      }
-      if (tier === "premium") {
-        return `High-end flagship choice featuring top-tier build quality, premium specs, and maximum durability for your ${matchedArchetype?.title.toLowerCase()}.`;
-      }
-      return `Recommended sweet-spot for your goal: provides strong performance, verified high ratings (${p.rating}★), and excellent price-to-value ratio.`;
-    };
-
+  matchedArchetype.pillars.forEach((pillar, idx) => {
+    const matched = matchResults[idx];
     if (matched.budgetProduct) {
-      usedProductIds.add(matched.budgetProduct.productId);
       budgetPillars.push({
         id: `pillar_${pillar.name.toLowerCase().replace(/\s+/g, "_")}_budget`,
         name: pillar.name,
         role: pillar.role,
         description: pillar.description,
         product: matched.budgetProduct,
-        reason: getRationale(matched.budgetProduct, "budget"),
+        reason: getRationale(matched.budgetProduct, pillar.role, "budget"),
         alternatives: matched.allCandidates.filter(c => c.productId !== matched.budgetProduct?.productId),
       });
     }
@@ -411,7 +437,7 @@ export const analyzeReverseShoppingGoal = async (
         role: pillar.role,
         description: pillar.description,
         product: matched.balancedProduct,
-        reason: getRationale(matched.balancedProduct, "balanced"),
+        reason: getRationale(matched.balancedProduct, pillar.role, "balanced"),
         alternatives: matched.allCandidates.filter(c => c.productId !== matched.balancedProduct?.productId),
       });
     }
@@ -423,11 +449,11 @@ export const analyzeReverseShoppingGoal = async (
         role: pillar.role,
         description: pillar.description,
         product: matched.premiumProduct,
-        reason: getRationale(matched.premiumProduct, "premium"),
+        reason: getRationale(matched.premiumProduct, pillar.role, "premium"),
         alternatives: matched.allCandidates.filter(c => c.productId !== matched.premiumProduct?.productId),
       });
     }
-  }
+  });
 
   // Calculate totals
   const calcTotal = (pillars: SolutionPillar[]) => pillars.reduce((sum, p) => sum + (p.product?.price || 0), 0);
@@ -504,7 +530,7 @@ export const analyzeReverseShoppingGoal = async (
     overview = `आपके लक्ष्य "${rawGoal}" के लिए AI ने ${matchedArchetype.pillars.length} आवश्यक आवश्यकताओं की पहचान की और उपयुक्त उत्पादों का समाधान तैयार किया।`;
   }
 
-  return {
+  const result: ReverseShoppingAnalysisResponse = {
     goal: matchedArchetype.title,
     originalQuery: rawGoal,
     language: lang,
@@ -517,6 +543,9 @@ export const analyzeReverseShoppingGoal = async (
     activeStrategyIndex,
     overviewSummary: overview,
   };
+
+  reverseShoppingCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
+  return result;
 };
 
 // Conversational refinement handler

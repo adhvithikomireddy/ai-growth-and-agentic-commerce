@@ -92,14 +92,27 @@ export const ReverseShoppingView: React.FC<ReverseShoppingViewProps> = () => {
     },
   ];
 
+  const clientGoalCache = React.useRef<Map<string, ReverseShoppingAnalysisResponse>>(new Map());
+
   const handleAnalyzeGoal = async (queryToUse?: string, budgetOverride?: number) => {
     const goalText = queryToUse || goalInput;
     if (!goalText.trim()) return;
+
+    const cacheKey = `${goalText.trim().toLowerCase()}_${language}_${budgetOverride || "any"}`;
+
+    // Instant 0ms cache retrieval
+    if (clientGoalCache.current.has(cacheKey)) {
+      const cached = clientGoalCache.current.get(cacheKey)!;
+      setSolutionData(cached);
+      setActiveStrategyIndex(cached.activeStrategyIndex || 0);
+      return;
+    }
 
     try {
       setLoading(true);
       setAddedToCartSuccess(false);
       const data = await api.analyzeReverseGoal(goalText, language, budgetOverride);
+      clientGoalCache.current.set(cacheKey, data);
       setSolutionData(data);
       setActiveStrategyIndex(data.activeStrategyIndex || 0);
 
